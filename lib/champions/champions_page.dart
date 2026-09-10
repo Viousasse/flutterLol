@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'models/champion.dart';
+import 'services/champion_service.dart';
 import 'widgets/champion_tile/champion_tile.dart';
 
 class ChampionsPage extends StatefulWidget {
@@ -18,28 +17,13 @@ class _ChampionsPageState extends State<ChampionsPage> {
   @override
   void initState() {
     super.initState();
-    fetchChampions();
+    loadChampions();
   }
 
-  Future<void> fetchChampions() async {
-    final versionResponse = await http.get(
-      Uri.parse('https://ddragon.leagueoflegends.com/api/versions.json'),
-    );
-    final versions = jsonDecode(versionResponse.body) as List;
-    final version = versions.first;
-
-    final champsResponse = await http.get(
-      Uri.parse(
-        'https://ddragon.leagueoflegends.com/cdn/$version/data/fr_FR/champion.json',
-      ),
-    );
-    final data = jsonDecode(champsResponse.body);
-    final championsMap = data['data'] as Map<String, dynamic>;
-
+  Future<void> loadChampions() async {
+    final result = await ChampionService.fetchAll();
     setState(() {
-      champions = championsMap.values
-          .map((json) => Champion.fromJson(json, version))
-          .toList();
+      champions = result;
       isLoading = false;
     });
   }

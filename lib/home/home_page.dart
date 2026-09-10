@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'widgets/hero_section/hero_section.dart';
-import 'widgets/action_button/action_button.dart';
+import 'widgets/champion_of_the_day/champion_of_the_day.dart';
+import 'widgets/favorites_link/favorites_link.dart';
+import 'widgets/random_lore/random_lore.dart';
 import '../champions/champions_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -12,23 +13,24 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('LoL App'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const HeroSection(),
-            const SizedBox(height: 40),
-            ActionButton(
-              label: 'Voir les champions',
+      body: ListView(
+        children: [
+          const ChampionOfTheDay(),
+          const FavoritesLink(),
+          const RandomLore(),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ChampionsPage()),
                 );
               },
+              child: const Text('Voir tous les champions'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

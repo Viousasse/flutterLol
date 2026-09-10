@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'champions/lol_champions_page.dart';
 import 'home/home_page.dart';
 void main() {
   runApp(const MyApp());
