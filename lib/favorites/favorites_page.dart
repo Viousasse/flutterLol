@@ -8,10 +8,10 @@ class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
 
   @override
-  State<FavoritesPage> createState() => _FavoritesPageState();
+  State<FavoritesPage> createState() => FavoritesPageState();
 }
 
-class _FavoritesPageState extends State<FavoritesPage> {
+class FavoritesPageState extends State<FavoritesPage> {
   List<Champion> favoriteChampions = [];
   bool isLoading = true;
 
@@ -19,6 +19,13 @@ class _FavoritesPageState extends State<FavoritesPage> {
   void initState() {
     super.initState();
     loadFavorites();
+  }
+
+  Future<void> reload() async {
+    setState(() {
+      isLoading = true;
+    });
+    await loadFavorites();
   }
 
   Future<void> loadFavorites() async {

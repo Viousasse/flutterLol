@@ -2,27 +2,39 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class FavoritesService {
   static const _key = 'favorite_champions';
+  static Set<String>? _cache;
+  static Future<void> _writeQueue = Future.value();
+
+  static Future<void> _ensureLoaded() async {
+    if (_cache != null) return;
+    final prefs = await SharedPreferences.getInstance();
+    _cache = (prefs.getStringList(_key) ?? []).toSet();
+  }
 
   static Future<Set<String>> getFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    return (prefs.getStringList(_key) ?? []).toSet();
+    await _ensureLoaded();
+    return Set.from(_cache!);
   }
 
   static Future<void> toggleFavorite(String championId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final favorites = (prefs.getStringList(_key) ?? []).toSet();
+    await _ensureLoaded();
 
-    if (favorites.contains(championId)) {
-      favorites.remove(championId);
+    if (_cache!.contains(championId)) {
+      _cache!.remove(championId);
     } else {
-      favorites.add(championId);
+      _cache!.add(championId);
     }
 
-    await prefs.setStringList(_key, favorites.toList());
+    _writeQueue = _writeQueue.then((_) async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_key, _cache!.toList());
+    });
+
+    await _writeQueue;
   }
 
   static Future<bool> isFavorite(String championId) async {
-    final favorites = await getFavorites();
-    return favorites.contains(championId);
+    await _ensureLoaded();
+    return _cache!.contains(championId);
   }
 }
