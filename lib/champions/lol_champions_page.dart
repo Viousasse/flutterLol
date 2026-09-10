@@ -22,14 +22,14 @@ class _LolChampionsPageState extends State<LolChampionsPage> {
   }
 
   Future<void> fetchChampions() async {
-    // 1. On récupère la dernière version du jeu
+    
     final versionResponse = await http.get(
       Uri.parse('https://ddragon.leagueoflegends.com/api/versions.json'),
     );
     final versions = jsonDecode(versionResponse.body) as List;
     version = versions.first;
 
-    // 2. On récupère la liste des champions pour cette version
+    
     final champsResponse = await http.get(
       Uri.parse(
         'https://ddragon.leagueoflegends.com/cdn/$version/data/fr_FR/champion.json',
