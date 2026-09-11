@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 
-class ItemFilterChip extends StatelessWidget {
+class AppFilterChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
-  const ItemFilterChip({
+  const AppFilterChip({
     super.key,
     required this.label,
     required this.selected,

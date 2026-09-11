@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/item.dart';
-import '../item_filter_chip/item_filter_chip.dart';
+import '../../../shared/widgets/app_filter_chip/app_filter_chip.dart';
 
 class ItemTierBar extends StatelessWidget {
   final ItemTier? selectedTier;
@@ -25,7 +25,7 @@ class ItemTierBar extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          ItemFilterChip(
+          AppFilterChip(
             label: 'Tous',
             selected: selectedTier == null,
             onTap: () => onSelect(null),
@@ -33,7 +33,7 @@ class ItemTierBar extends StatelessWidget {
           ...ItemTier.values.map((tier) {
             return Padding(
               padding: const EdgeInsets.only(left: 7),
-              child: ItemFilterChip(
+              child: AppFilterChip(
                 label: _labels[tier]!,
                 selected: selectedTier == tier,
                 onTap: () => onSelect(selectedTier == tier ? null : tier),

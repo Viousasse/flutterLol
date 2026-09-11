@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../models/item_profile.dart';
+import '../../constants/map_landmarks.dart';
 import '../../../shared/widgets/app_filter_chip/app_filter_chip.dart';
 
-class ItemProfileBar extends StatelessWidget {
-  final ItemProfile? selectedProfile;
-  final ValueChanged<ItemProfile?> onSelect;
+class MapTypeBar extends StatelessWidget {
+  final LandmarkType? selectedType;
+  final ValueChanged<LandmarkType?> onSelect;
 
-  const ItemProfileBar({
+  const MapTypeBar({
     super.key,
-    required this.selectedProfile,
+    required this.selectedType,
     required this.onSelect,
   });
 
@@ -21,18 +21,16 @@ class ItemProfileBar extends StatelessWidget {
         children: [
           AppFilterChip(
             label: 'Tout',
-            selected: selectedProfile == null,
+            selected: selectedType == null,
             onTap: () => onSelect(null),
           ),
-          ...ItemProfile.values.map((profile) {
+          ...LandmarkType.values.map((type) {
             return Padding(
               padding: const EdgeInsets.only(left: 7),
               child: AppFilterChip(
-                label: profileLabels[profile]!,
-                selected: selectedProfile == profile,
-                onTap: () {
-                  onSelect(selectedProfile == profile ? null : profile);
-                },
+                label: landmarkTypeLabels[type]!,
+                selected: selectedType == type,
+                onTap: () => onSelect(selectedType == type ? null : type),
               ),
             );
           }),

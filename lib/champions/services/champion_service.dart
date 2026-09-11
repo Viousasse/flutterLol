@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../data_dragon/data_dragon_service.dart';
 import '../models/champion.dart';
 import '../models/champion_detail.dart';
 
@@ -12,16 +13,10 @@ class ChampionService {
   static Future<List<Champion>> fetchAll() async {
     if (_cache != null) return _cache!;
 
-    final versionResponse = await http.get(
-      Uri.parse('https://ddragon.leagueoflegends.com/api/versions.json'),
-    );
-    final versions = jsonDecode(versionResponse.body) as List;
-    _version = versions.first;
+    _version = await DataDragonService.latestVersion();
 
     final champsResponse = await http.get(
-      Uri.parse(
-        'https://ddragon.leagueoflegends.com/cdn/$_version/data/fr_FR/champion.json',
-      ),
+      Uri.parse(DataDragonService.dataUrl(_version!, 'champion.json')),
     );
     final data = jsonDecode(champsResponse.body);
     final championsMap = data['data'] as Map<String, dynamic>;
@@ -40,7 +35,7 @@ class ChampionService {
 
     final response = await http.get(
       Uri.parse(
-        'https://ddragon.leagueoflegends.com/cdn/$_version/data/fr_FR/champion/$championId.json',
+        DataDragonService.dataUrl(_version!, 'champion/$championId.json'),
       ),
     );
     final data = jsonDecode(response.body);

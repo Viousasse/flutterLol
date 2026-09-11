@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../data_dragon/data_dragon_service.dart';
 import '../models/item.dart';
 import '../models/item_stack.dart';
 
@@ -13,16 +14,10 @@ class ItemService {
   static Future<List<Item>> fetchAll() async {
     if (_cache != null) return _cache!;
 
-    final versionResponse = await http.get(
-      Uri.parse('https://ddragon.leagueoflegends.com/api/versions.json'),
-    );
-    final versions = jsonDecode(versionResponse.body) as List;
-    final version = versions.first;
+    final version = await DataDragonService.latestVersion();
 
     final itemsResponse = await http.get(
-      Uri.parse(
-        'https://ddragon.leagueoflegends.com/cdn/$version/data/fr_FR/item.json',
-      ),
+      Uri.parse(DataDragonService.dataUrl(version, 'item.json')),
     );
     final data = jsonDecode(itemsResponse.body);
     final itemsMap = data['data'] as Map<String, dynamic>;

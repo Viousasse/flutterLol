@@ -4,6 +4,7 @@ import '../home/home_page.dart';
 import '../champions/champions_page.dart';
 import '../roles/roles_page.dart';
 import '../items/items_page.dart';
+import '../map/map_page.dart';
 import '../favorites/favorites_page.dart';
 import '../theme/app_colors.dart';
 
@@ -17,7 +18,14 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int currentIndex = 0;
 
-  final labels = const ['Accueil', 'Champions', 'Rôles', 'Objets', 'Favoris'];
+  final labels = const [
+    'Accueil',
+    'Champions',
+    'Rôles',
+    'Objets',
+    'Carte',
+    'Favoris',
+  ];
 
   Widget _buildPage() {
     switch (currentIndex) {
@@ -30,6 +38,8 @@ class _MainNavigationState extends State<MainNavigation> {
       case 3:
         return const ItemsPage();
       case 4:
+        return const MapPage();
+      case 5:
         return const FavoritesPage();
       default:
         return const HomePage();
@@ -69,12 +79,16 @@ class _MainNavigationState extends State<MainNavigation> {
                             : AppColors.border,
                       ),
                     ),
-                    child: Text(
-                      labels[index],
-                      style: GoogleFonts.instrumentSans(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: selected ? AppColors.accent : AppColors.textMuted,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        labels[index],
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              selected ? AppColors.accent : AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ),
