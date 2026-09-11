@@ -52,7 +52,10 @@ class FavoritesPageState extends State<FavoritesPage> {
               : ListView.builder(
                   itemCount: favoriteChampions.length,
                   itemBuilder: (context, index) {
-                    return ChampionTile(champion: favoriteChampions[index]);
+                    return ChampionTile(
+                      champion: favoriteChampions[index],
+                      onFavoriteChanged: reload,
+                    );
                   },
                 ),
     );

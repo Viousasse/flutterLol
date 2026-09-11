@@ -12,30 +12,30 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int currentIndex = 0;
-  final favoritesKey = GlobalKey<FavoritesPageState>();
 
-  late final pages = [
-    const HomePage(),
-    const ChampionsPage(),
-    FavoritesPage(key: favoritesKey),
-  ];
+  Widget _buildPage() {
+    switch (currentIndex) {
+      case 0:
+        return const HomePage();
+      case 1:
+        return const ChampionsPage();
+      case 2:
+        return const FavoritesPage();
+      default:
+        return const HomePage();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: currentIndex,
-        children: pages,
-      ),
+      body: _buildPage(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) {
           setState(() {
             currentIndex = index;
           });
-          if (index == 2) {
-            favoritesKey.currentState?.reload();
-          }
         },
         items: const [
           BottomNavigationBarItem(

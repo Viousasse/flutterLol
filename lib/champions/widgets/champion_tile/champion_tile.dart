@@ -4,8 +4,13 @@ import '../../services/favorites_service.dart';
 
 class ChampionTile extends StatefulWidget {
   final Champion champion;
+  final VoidCallback? onFavoriteChanged;
 
-  const ChampionTile({super.key, required this.champion});
+  const ChampionTile({
+    super.key,
+    required this.champion,
+    this.onFavoriteChanged,
+  });
 
   @override
   State<ChampionTile> createState() => _ChampionTileState();
@@ -32,6 +37,7 @@ class _ChampionTileState extends State<ChampionTile> {
     setState(() {
       isFavorite = !isFavorite;
     });
+    widget.onFavoriteChanged?.call();
   }
 
   @override
