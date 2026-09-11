@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/champion.dart';
+import '../models/champion_detail.dart';
 
 class ChampionService {
   static List<Champion>? _cache;
+  static String? _version;
 
   static Future<List<Champion>> fetchAll() async {
     if (_cache != null) return _cache!;
@@ -12,20 +14,36 @@ class ChampionService {
       Uri.parse('https://ddragon.leagueoflegends.com/api/versions.json'),
     );
     final versions = jsonDecode(versionResponse.body) as List;
-    final version = versions.first;
+    _version = versions.first;
 
     final champsResponse = await http.get(
       Uri.parse(
-        'https://ddragon.leagueoflegends.com/cdn/$version/data/fr_FR/champion.json',
+        'https://ddragon.leagueoflegends.com/cdn/$_version/data/fr_FR/champion.json',
       ),
     );
     final data = jsonDecode(champsResponse.body);
     final championsMap = data['data'] as Map<String, dynamic>;
 
     _cache = championsMap.values
-        .map((json) => Champion.fromJson(json, version))
+        .map((json) => Champion.fromJson(json, _version!))
         .toList();
 
     return _cache!;
+  }
+
+  static Future<ChampionDetail> fetchDetail(String championId) async {
+    if (_version == null) {
+      await fetchAll();
+    }
+
+    final response = await http.get(
+      Uri.parse(
+        'https://ddragon.leagueoflegends.com/cdn/$_version/data/fr_FR/champion/$championId.json',
+      ),
+    );
+    final data = jsonDecode(response.body);
+    final championJson = data['data'][championId];
+
+    return ChampionDetail.fromJson(championJson, _version!);
   }
 }

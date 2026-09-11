@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/champion.dart';
 import '../../services/favorites_service.dart';
+import '../../../champion_detail/champion_detail_page.dart';
 
 class ChampionTile extends StatefulWidget {
   final Champion champion;
@@ -46,6 +47,15 @@ class _ChampionTileState extends State<ChampionTile> {
       leading: Image.network(widget.champion.imageUrl, width: 50, height: 50),
       title: Text(widget.champion.name),
       subtitle: Text(widget.champion.title),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                ChampionDetailPage(championId: widget.champion.id),
+          ),
+        );
+      },
       trailing: IconButton(
         icon: Icon(
           isFavorite ? Icons.star : Icons.star_border,
