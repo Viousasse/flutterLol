@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/champion.dart';
 import '../../services/favorites_service.dart';
 import '../../../champion_detail/champion_detail_page.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_theme.dart';
 import 'champion_card_favorite_badge.dart';
-import 'champion_card_info.dart';
 
 class ChampionCard extends StatefulWidget {
   final Champion champion;
@@ -63,30 +64,81 @@ class _ChampionCardState extends State<ChampionCard> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.border),
         ),
         clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 1.6,
-                  child: Image.network(splashUrl, fit: BoxFit.cover),
+            Image.network(splashUrl, fit: BoxFit.cover),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.45, 1.0],
+                  colors: [
+                    Colors.transparent,
+                    AppColors.background.withOpacity(0.92),
+                  ],
                 ),
-                ChampionCardFavoriteBadge(
-                  isFavorite: isFavorite,
-                  onTap: toggleFavorite,
-                ),
-              ],
+              ),
             ),
-            ChampionCardInfo(
-              name: widget.champion.name,
-              title: widget.champion.title,
-              role: role,
+            ChampionCardFavoriteBadge(
+              isFavorite: isFavorite,
+              onTap: toggleFavorite,
+            ),
+            Positioned(
+              left: 10,
+              right: 10,
+              bottom: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.champion.name,
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.champion.title,
+                    style: AppTheme.serif(
+                      size: 11.5,
+                      italic: true,
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (role.isNotEmpty) ...[
+                    const SizedBox(height: 7),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentSoft,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        role,
+                        style: AppTheme.mono(
+                          size: 9,
+                          color: AppColors.accent,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ],
         ),

@@ -43,6 +43,7 @@ class FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Favoris', style: AppTheme.serif(size: 24)),
@@ -63,7 +64,7 @@ class FavoritesPageState extends State<FavoritesPage> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.72,
+                    childAspectRatio: 0.75,
                   ),
                   itemCount: favoriteChampions.length,
                   itemBuilder: (context, index) {

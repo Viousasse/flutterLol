@@ -34,6 +34,7 @@ class _ChampionsByRolePageState extends State<ChampionsByRolePage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.role, style: AppTheme.serif(size: 24)),
@@ -46,7 +47,7 @@ class _ChampionsByRolePageState extends State<ChampionsByRolePage> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 0.72,
+                childAspectRatio: 0.75,
               ),
               itemCount: champions.length,
               itemBuilder: (context, index) {

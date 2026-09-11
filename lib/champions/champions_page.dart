@@ -116,6 +116,7 @@ class _ChampionsPageState extends State<ChampionsPage> {
       );
     }
 
+
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
       sliver: SliverGrid(
@@ -123,7 +124,7 @@ class _ChampionsPageState extends State<ChampionsPage> {
           crossAxisCount: 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.72,
+          childAspectRatio: 0.75,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) => ChampionCard(champion: filteredChampions[index]),

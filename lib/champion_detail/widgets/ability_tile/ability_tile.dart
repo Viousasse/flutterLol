@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../champions/models/champion_detail.dart';
 import '../../../theme/app_colors.dart';
+import 'ability_icon.dart';
 
 class AbilityTile extends StatelessWidget {
   final String label;
@@ -12,7 +13,7 @@ class AbilityTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -22,24 +23,8 @@ class AbilityTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: label == 'R' ? AppColors.accent : AppColors.accentSoft,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              label,
-              style: GoogleFonts.jetBrainsMono(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-                color: label == 'R' ? AppColors.background : AppColors.accent,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
+          AbilityIcon(label: label, imageUrl: ability.imageUrl),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

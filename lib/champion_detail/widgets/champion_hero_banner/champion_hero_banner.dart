@@ -18,9 +18,11 @@ class ChampionHeroBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final splashUrl =
         'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${championId}_0.jpg';
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bannerHeight = screenWidth / (1215 / 717);
 
     return SliverAppBar(
-      expandedHeight: 260,
+      expandedHeight: bannerHeight,
       pinned: true,
       backgroundColor: AppColors.background,
       flexibleSpace: FlexibleSpaceBar(
