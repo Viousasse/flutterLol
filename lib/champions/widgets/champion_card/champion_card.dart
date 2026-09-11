@@ -47,8 +47,6 @@ class _ChampionCardState extends State<ChampionCard> {
 
   @override
   Widget build(BuildContext context) {
-    final splashUrl =
-        'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${widget.champion.id}_0.jpg';
     final role =
         widget.champion.tags.isNotEmpty ? widget.champion.tags.first : '';
 
@@ -71,7 +69,7 @@ class _ChampionCardState extends State<ChampionCard> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(splashUrl, fit: BoxFit.cover),
+            Image.network(widget.champion.imageUrl, fit: BoxFit.cover),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

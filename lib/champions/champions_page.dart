@@ -124,7 +124,7 @@ class _ChampionsPageState extends State<ChampionsPage> {
           crossAxisCount: 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.75,
+          childAspectRatio: 0.82,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) => ChampionCard(champion: filteredChampions[index]),

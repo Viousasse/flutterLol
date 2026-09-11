@@ -64,7 +64,7 @@ class FavoritesPageState extends State<FavoritesPage> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 0.82,
                   ),
                   itemCount: favoriteChampions.length,
                   itemBuilder: (context, index) {
