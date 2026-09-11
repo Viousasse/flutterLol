@@ -19,9 +19,20 @@ class ItemSortButton extends StatelessWidget {
       case ItemSort.name:
         return 'A-Z';
       case ItemSort.priceAsc:
-        return 'Prix +';
+        return 'Moins cher';
       case ItemSort.priceDesc:
-        return 'Prix -';
+        return 'Plus cher';
+    }
+  }
+
+  IconData get _icon {
+    switch (current) {
+      case ItemSort.name:
+        return Icons.sort_by_alpha;
+      case ItemSort.priceAsc:
+        return Icons.arrow_upward;
+      case ItemSort.priceDesc:
+        return Icons.arrow_downward;
     }
   }
 
@@ -49,7 +60,7 @@ class ItemSortButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.swap_vert, size: 15, color: AppColors.accent),
+            Icon(_icon, size: 14, color: AppColors.accent),
             const SizedBox(width: 5),
             Text(_label, style: AppTheme.mono(size: 11, color: AppColors.accent)),
           ],

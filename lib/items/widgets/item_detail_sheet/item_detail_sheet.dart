@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/item.dart';
+import '../../models/item_stack.dart';
+import '../../services/item_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../item_recipe_section/item_recipe_section.dart';
+import 'item_detail_header.dart';
 
-class ItemDetailSheet extends StatelessWidget {
+class ItemDetailSheet extends StatefulWidget {
   final Item item;
 
   const ItemDetailSheet({super.key, required this.item});
@@ -13,6 +17,7 @@ class ItemDetailSheet extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -21,54 +26,148 @@ class ItemDetailSheet extends StatelessWidget {
   }
 
   @override
+  State<ItemDetailSheet> createState() => _ItemDetailSheetState();
+}
+
+class _ItemDetailSheetState extends State<ItemDetailSheet> {
+  late final List<Item> _visitedItems = [widget.item];
+
+  Item get _currentItem => _visitedItems.last;
+
+  bool get _canGoBack => _visitedItems.length > 1;
+
+  void _open(Item item) {
+    setState(() {
+      _visitedItems.add(item);
+    });
+  }
+
+  void _goBack() {
+    setState(() {
+      _visitedItems.removeLast();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    final maxSheetHeight = MediaQuery.sizeOf(context).height * 0.8;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxSheetHeight),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(item.imageUrl, width: 54, height: 54),
+              const _DragHandle(),
+              const SizedBox(height: 14),
+              ItemDetailHeader(
+                item: _currentItem,
+                onBack: _canGoBack ? _goBack : null,
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item.name, style: AppTheme.serif(size: 20)),
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Icon(Icons.circle, size: 9, color: AppColors.accent),
-                        const SizedBox(width: 5),
-                        Text(
-                          '${item.gold} or',
-                          style:
-                              AppTheme.mono(size: 12, color: AppColors.accent),
-                        ),
-                      ],
-                    ),
-                  ],
+              const SizedBox(height: 16),
+              Text(
+                _currentItem.description,
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 13.5,
+                  height: 1.5,
+                  color: AppColors.textSecondary,
                 ),
               ),
+              ..._buildRecipeSections(),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            item.description,
-            style: GoogleFonts.instrumentSans(
-              fontSize: 13.5,
-              height: 1.5,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
+        ),
       ),
+    );
+  }
+
+  List<Widget> _buildRecipeSections() {
+    final components = ItemService.componentsOf(_currentItem);
+    final upgrades = ItemService.upgradesOf(_currentItem);
+    final finalBuilds = ItemService.finalBuildsOf(_currentItem);
+
+    return [
+      if (components.isNotEmpty) ...[
+        const SizedBox(height: 20),
+        ItemRecipeSection(
+          title: 'Se compose de',
+          stacks: components,
+          onSelect: _open,
+        ),
+      ],
+      if (upgrades.isNotEmpty) ...[
+        const SizedBox(height: 20),
+        ItemRecipeSection(
+          title: 'Permet de construire',
+          stacks: upgrades,
+          onSelect: _open,
+        ),
+      ],
+      if (_hasDeeperBuildPath(upgrades, finalBuilds)) ...[
+        const SizedBox(height: 20),
+        ItemRecipeSection(
+          title: 'Objets finaux atteignables',
+          stacks: finalBuilds,
+          onSelect: _open,
+        ),
+      ],
+      if (upgrades.isEmpty) ...[
+        const SizedBox(height: 20),
+        const _FinalItemNotice(),
+      ],
+    ];
+  }
+
+  /// La liste des objets finaux n'est affichée que si elle apporte plus que les
+  /// évolutions directes, sinon les deux sections seraient identiques.
+  bool _hasDeeperBuildPath(
+    List<ItemStack> upgrades,
+    List<ItemStack> finalBuilds,
+  ) {
+    if (finalBuilds.isEmpty) return false;
+
+    final upgradeIds = upgrades.map((stack) => stack.item.id).toSet();
+
+    return finalBuilds.any((stack) => !upgradeIds.contains(stack.item.id));
+  }
+}
+
+class _DragHandle extends StatelessWidget {
+  const _DragHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 38,
+        height: 4,
+        decoration: BoxDecoration(
+          color: AppColors.border,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+}
+
+class _FinalItemNotice extends StatelessWidget {
+  const _FinalItemNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(Icons.check_circle_outline, size: 14, color: AppColors.textMuted),
+        const SizedBox(width: 7),
+        Text(
+          'Objet final, il ne se construit pas davantage.',
+          style: AppTheme.mono(size: 10, color: AppColors.textMuted),
+        ),
+      ],
     );
   }
 }

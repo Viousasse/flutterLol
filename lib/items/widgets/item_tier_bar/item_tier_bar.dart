@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/item.dart';
-import '../../../theme/app_colors.dart';
+import '../item_filter_chip/item_filter_chip.dart';
 
 class ItemTierBar extends StatelessWidget {
   final ItemTier? selectedTier;
@@ -25,7 +25,7 @@ class ItemTierBar extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          _Chip(
+          ItemFilterChip(
             label: 'Tous',
             selected: selectedTier == null,
             onTap: () => onSelect(null),
@@ -33,7 +33,7 @@ class ItemTierBar extends StatelessWidget {
           ...ItemTier.values.map((tier) {
             return Padding(
               padding: const EdgeInsets.only(left: 7),
-              child: _Chip(
+              child: ItemFilterChip(
                 label: _labels[tier]!,
                 selected: selectedTier == tier,
                 onTap: () => onSelect(selectedTier == tier ? null : tier),
@@ -41,44 +41,6 @@ class ItemTierBar extends StatelessWidget {
             );
           }),
         ],
-      ),
-    );
-  }
-}
-
-class _Chip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _Chip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? AppColors.accentSoft : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? AppColors.accent : AppColors.border,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w500,
-            color: selected ? AppColors.accent : AppColors.textSecondary,
-          ),
-        ),
       ),
     );
   }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'models/item.dart';
+import 'models/item_profile.dart';
 import 'services/item_service.dart';
 import 'widgets/item_card/item_card.dart';
 import 'widgets/items_search_bar/items_search_bar.dart';
 import 'widgets/item_tier_bar/item_tier_bar.dart';
+import 'widgets/item_profile_bar/item_profile_bar.dart';
 import 'widgets/item_sort_button/item_sort_button.dart';
 import 'widgets/item_detail_sheet/item_detail_sheet.dart';
 import '../theme/app_colors.dart';
@@ -22,6 +24,7 @@ class _ItemsPageState extends State<ItemsPage> {
   bool isLoading = true;
   String query = '';
   ItemTier? selectedTier;
+  ItemProfile? selectedProfile;
   ItemSort sort = ItemSort.name;
 
   @override
@@ -40,11 +43,15 @@ class _ItemsPageState extends State<ItemsPage> {
   }
 
   void applyFilters() {
-    var list = allItems.where((i) {
-      final matchesQuery =
-          i.name.toLowerCase().contains(query.toLowerCase());
-      final matchesTier = selectedTier == null || i.tier == selectedTier;
-      return matchesQuery && matchesTier;
+    final lowerCaseQuery = query.toLowerCase();
+
+    var list = allItems.where((item) {
+      final matchesQuery = item.name.toLowerCase().contains(lowerCaseQuery);
+      final matchesTier = selectedTier == null || item.tier == selectedTier;
+      final matchesProfile =
+          selectedProfile == null || item.profile == selectedProfile;
+
+      return matchesQuery && matchesTier && matchesProfile;
     }).toList();
 
     switch (sort) {
@@ -63,6 +70,7 @@ class _ItemsPageState extends State<ItemsPage> {
       filteredItems = list;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +109,14 @@ class _ItemsPageState extends State<ItemsPage> {
                 },
               ),
               const SizedBox(height: 12),
+              ItemProfileBar(
+                selectedProfile: selectedProfile,
+                onSelect: (profile) {
+                  selectedProfile = profile;
+                  applyFilters();
+                },
+              ),
+              const SizedBox(height: 8),
               ItemTierBar(
                 selectedTier: selectedTier,
                 onSelect: (tier) {
