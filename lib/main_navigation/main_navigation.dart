@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../home/home_page.dart';
 import '../champions/champions_page.dart';
+import '../roles/roles_page.dart';
 import '../favorites/favorites_page.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -20,6 +21,8 @@ class _MainNavigationState extends State<MainNavigation> {
       case 1:
         return const ChampionsPage();
       case 2:
+        return const RolesPage();
+      case 3:
         return const FavoritesPage();
       default:
         return const HomePage();
@@ -31,6 +34,7 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       body: _buildPage(),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
         onTap: (index) {
           setState(() {
@@ -45,6 +49,10 @@ class _MainNavigationState extends State<MainNavigation> {
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: 'Champions',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: 'Rôles',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.star),

@@ -4,6 +4,7 @@ class Champion {
   final String title;
   final String blurb;
   final String imageUrl;
+  final List<String> tags;
 
   Champion({
     required this.id,
@@ -11,6 +12,7 @@ class Champion {
     required this.title,
     required this.blurb,
     required this.imageUrl,
+    required this.tags,
   });
 
   factory Champion.fromJson(Map<String, dynamic> json, String version) {
@@ -21,6 +23,7 @@ class Champion {
       blurb: json['blurb'] ?? '',
       imageUrl:
           'https://ddragon.leagueoflegends.com/cdn/$version/img/champion/${json['image']['full']}',
+      tags: List<String>.from(json['tags'] ?? []),
     );
   }
 }
