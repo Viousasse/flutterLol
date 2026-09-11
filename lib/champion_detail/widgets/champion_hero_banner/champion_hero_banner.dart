@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../champions/widgets/champion_card/champion_card_favorite_badge.dart';
 
 class ChampionHeroBanner extends StatelessWidget {
   final String championId;
   final String name;
   final String title;
+  final bool isFavorite;
+  final VoidCallback onToggleFavorite;
 
   const ChampionHeroBanner({
     super.key,
     required this.championId,
     required this.name,
     required this.title,
+    required this.isFavorite,
+    required this.onToggleFavorite,
   });
 
   @override
@@ -41,6 +46,10 @@ class ChampionHeroBanner extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+            ChampionCardFavoriteBadge(
+              isFavorite: isFavorite,
+              onTap: onToggleFavorite,
             ),
             Positioned(
               left: 16,

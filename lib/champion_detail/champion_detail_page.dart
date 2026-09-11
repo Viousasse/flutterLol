@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
+import '../champions/services/favorites_service.dart';
 import 'widgets/ability_tile/ability_tile.dart';
 import 'widgets/champion_hero_banner/champion_hero_banner.dart';
 import '../theme/app_colors.dart';
@@ -18,11 +19,13 @@ class ChampionDetailPage extends StatefulWidget {
 class _ChampionDetailPageState extends State<ChampionDetailPage> {
   ChampionDetail? detail;
   bool isLoading = true;
+  bool isFavorite = false;
 
   @override
   void initState() {
     super.initState();
     loadDetail();
+    loadFavoriteStatus();
   }
 
   Future<void> loadDetail() async {
@@ -30,6 +33,20 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
     setState(() {
       detail = result;
       isLoading = false;
+    });
+  }
+
+  Future<void> loadFavoriteStatus() async {
+    final favorite = await FavoritesService.isFavorite(widget.championId);
+    setState(() {
+      isFavorite = favorite;
+    });
+  }
+
+  Future<void> toggleFavorite() async {
+    await FavoritesService.toggleFavorite(widget.championId);
+    setState(() {
+      isFavorite = !isFavorite;
     });
   }
 
@@ -50,6 +67,8 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
             championId: widget.championId,
             name: detail!.name,
             title: detail!.title,
+            isFavorite: isFavorite,
+            onToggleFavorite: toggleFavorite,
           ),
           SliverPadding(
             padding: const EdgeInsets.all(20),
