@@ -1,43 +1,64 @@
 import 'package:flutter/material.dart';
-import 'widgets/role_tile/role_tile.dart';
+import '../champions/constants/roles.dart';
+import '../champions/services/champion_service.dart';
 import '../champions_by_role/champions_by_role_page.dart';
+import '../theme/app_theme.dart';
+import 'widgets/role_row/role_row.dart';
 
-class RolesPage extends StatelessWidget {
+class RolesPage extends StatefulWidget {
   const RolesPage({super.key});
 
-  final roles = const [
-    {'name': 'Tank', 'icon': Icons.shield},
-    {'name': 'Fighter', 'icon': Icons.sports_martial_arts},
-    {'name': 'Assassin', 'icon': Icons.flash_on},
-    {'name': 'Mage', 'icon': Icons.auto_fix_high},
-    {'name': 'Marksman', 'icon': Icons.gps_fixed},
-    {'name': 'Support', 'icon': Icons.favorite},
-  ];
+  @override
+  State<RolesPage> createState() => _RolesPageState();
+}
+
+class _RolesPageState extends State<RolesPage> {
+  Map<String, int> counts = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadCounts();
+  }
+
+  Future<void> loadCounts() async {
+    final champions = await ChampionService.fetchAll();
+    final result = <String, int>{};
+    for (final role in roleList) {
+      result[role] = champions.where((c) => c.tags.contains(role)).length;
+    }
+    setState(() {
+      counts = result;
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rôles'),
+        title: Text('Rôles', style: AppTheme.serif(size: 24)),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: roles.map((role) {
-          return RoleTile(
-            name: role['name'] as String,
-            icon: role['icon'] as IconData,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ChampionsByRolePage(role: role['name'] as String),
-                ),
-              );
-            },
-          );
-        }).toList(),
-      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: roleList.map((role) {
+                return RoleRow(
+                  role: role,
+                  count: counts[role] ?? 0,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChampionsByRolePage(role: role),
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+            ),
     );
   }
 }

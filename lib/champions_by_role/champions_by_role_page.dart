@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
-import '../champions/widgets/champion_tile/champion_tile.dart';
+import '../champions/widgets/champion_card/champion_card.dart';
+import '../theme/app_theme.dart';
 
 class ChampionsByRolePage extends StatefulWidget {
   final String role;
@@ -35,14 +36,21 @@ class _ChampionsByRolePageState extends State<ChampionsByRolePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.role),
+        title: Text(widget.role, style: AppTheme.serif(size: 24)),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
+          : GridView.builder(
+              padding: const EdgeInsets.all(20),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.72,
+              ),
               itemCount: champions.length,
               itemBuilder: (context, index) {
-                return ChampionTile(champion: champions[index]);
+                return ChampionCard(champion: champions[index]);
               },
             ),
     );

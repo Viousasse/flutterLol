@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'theme/app_theme.dart';
 import 'main_navigation/main_navigation.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -8,15 +9,11 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      
+      title: 'LoL App',
+      theme: AppTheme.theme,
       home: const MainNavigation(),
     );
   }

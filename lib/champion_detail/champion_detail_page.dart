@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
 import 'widgets/ability_tile/ability_tile.dart';
+import 'widgets/champion_hero_banner/champion_hero_banner.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 
 class ChampionDetailPage extends StatefulWidget {
   final String championId;
@@ -32,46 +35,50 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final labels = ['A', 'Z', 'E', 'R'];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(detail?.name ?? ''),
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
+      body: CustomScrollView(
+        slivers: [
+          ChampionHeroBanner(
+            championId: widget.championId,
+            name: detail!.name,
+            title: detail!.title,
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                Text('Histoire', style: AppTheme.serif(size: 20)),
+                const SizedBox(height: 10),
                 Text(
-                  detail!.title,
-                  style: const TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 16,
-                  ),
+                  detail!.lore,
+                  style: AppTheme.serif(
+                    size: 14,
+                    color: AppColors.textSecondary,
+                  ).copyWith(height: 1.6),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Histoire',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(detail!.lore),
-                const SizedBox(height: 24),
-                const Text(
-                  'Capacités',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                AbilityTile(label: 'Passif', ability: detail!.passive),
+                const SizedBox(height: 28),
+                Text('Capacités', style: AppTheme.serif(size: 20)),
+                const SizedBox(height: 6),
+                AbilityTile(label: 'P', ability: detail!.passive),
                 ...detail!.spells.asMap().entries.map((entry) {
                   return AbilityTile(
                     label: labels[entry.key],
                     ability: entry.value,
                   );
                 }),
-              ],
+              ]),
             ),
+          ),
+        ],
+      ),
     );
   }
 }
