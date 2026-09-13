@@ -5,6 +5,7 @@ import '../champions/services/champion_service.dart';
 import '../theme/app_colors.dart';
 import 'widgets/home_greeting/home_greeting.dart';
 import 'widgets/champion_hero_card/champion_hero_card.dart';
+import 'widgets/daily_quiz_card/daily_quiz_card.dart';
 import 'widgets/role_scroller/role_scroller.dart';
 import 'widgets/story_list/story_list.dart';
 import 'widgets/favorites_shortcut/favorites_shortcut.dart';
@@ -70,6 +71,13 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: StoryList(stories: storyPicks),
+            ),
+            const SizedBox(height: 24),
+            const _SectionTitle('Quiz du jour'),
+            const SizedBox(height: 11),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: DailyQuizCard(champions: champions),
             ),
             const SizedBox(height: 12),
             const Padding(

@@ -3,7 +3,9 @@ import '../data_dragon/data_dragon_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'constants/map_landmarks.dart';
+import 'widgets/map_calibration_panel/map_calibration_panel.dart';
 import 'widgets/map_landmark_details/map_landmark_details.dart';
+import 'widgets/map_placeholder/map_placeholder.dart';
 import 'widgets/map_type_bar/map_type_bar.dart';
 import 'widgets/summoners_rift_map/summoners_rift_map.dart';
 
@@ -113,7 +115,7 @@ class _MapPageState extends State<MapPage> {
             ),
             const SizedBox(height: 12),
             if (calibrating)
-              _CalibrationPanel(point: tappedPoint)
+              MapCalibrationPanel(point: tappedPoint)
             else
               MapLandmarkDetails(landmark: selectedLandmark),
           ],
@@ -124,12 +126,12 @@ class _MapPageState extends State<MapPage> {
 
   Widget _buildMap(BuildContext context, AsyncSnapshot<String> snapshot) {
     if (snapshot.hasError) {
-      return const _MapPlaceholder(message: 'Chargement impossible');
+      return const MapPlaceholder(message: 'Chargement impossible');
     }
 
     final version = snapshot.data;
     if (version == null) {
-      return const _MapPlaceholder(message: 'Chargement…');
+      return const MapPlaceholder(message: 'Chargement…');
     }
 
     return SummonersRiftMap(
@@ -139,69 +141,6 @@ class _MapPageState extends State<MapPage> {
       onSelect: _selectLandmark,
       onClearSelection: _clearSelection,
       onTapPosition: _reportTap,
-    );
-  }
-}
-
-/// Affiche les coordonnées relatives d'un appui, pour replacer un lieu sans
-/// tâtonner : on touche l'endroit voulu sur la carte et on recopie les deux
-/// nombres dans map_landmarks.dart.
-class _CalibrationPanel extends StatelessWidget {
-  final Offset? point;
-
-  const _CalibrationPanel({required this.point});
-
-  @override
-  Widget build(BuildContext context) {
-    final tapped = point;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: AppColors.accentSoft,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.accent),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Calibrage', style: AppTheme.serif(size: 16)),
-          const SizedBox(height: 6),
-          Text(
-            tapped == null
-                ? 'Touchez un endroit de la carte pour lire ses coordonnées.'
-                : 'x: ${tapped.dx.toStringAsFixed(3)}   '
-                    'y: ${tapped.dy.toStringAsFixed(3)}',
-            style: AppTheme.mono(size: 12, color: AppColors.textPrimary),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MapPlaceholder extends StatelessWidget {
-  final String message;
-
-  const _MapPlaceholder({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Text(
-          message,
-          style: AppTheme.mono(size: 11, color: AppColors.textMuted),
-        ),
-      ),
     );
   }
 }
