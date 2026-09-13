@@ -76,7 +76,7 @@ const summonersRiftLandmarks = [
     type: LandmarkType.lane,
     side: LandmarkSide.neutral,
     x: 0.300,
-    y: 0.120,
+    y: 0.095,
   ),
   MapLandmark(
     name: 'Mid',
@@ -96,7 +96,7 @@ const summonersRiftLandmarks = [
     type: LandmarkType.lane,
     side: LandmarkSide.neutral,
     x: 0.700,
-    y: 0.880,
+    y: 0.905,
   ),
   MapLandmark(
     name: 'Fosse du Baron',
@@ -126,8 +126,8 @@ const summonersRiftLandmarks = [
         "accélération de compétence.",
     type: LandmarkType.buff,
     side: LandmarkSide.blue,
-    x: 0.255,
-    y: 0.470,
+    x: 0.250,
+    y: 0.460,
   ),
   MapLandmark(
     name: 'Buff rouge',
@@ -146,8 +146,8 @@ const summonersRiftLandmarks = [
         "accélération de compétence.",
     type: LandmarkType.buff,
     side: LandmarkSide.red,
-    x: 0.745,
-    y: 0.530,
+    x: 0.750,
+    y: 0.540,
   ),
   MapLandmark(
     name: 'Buff rouge',
@@ -188,8 +188,8 @@ const summonersRiftLandmarks = [
     description: "Golems de pierre du côté bleu, à l'entrée de la voie du bas.",
     type: LandmarkType.camp,
     side: LandmarkSide.blue,
-    x: 0.580,
-    y: 0.820,
+    x: 0.560,
+    y: 0.830,
   ),
   MapLandmark(
     name: 'Gromp',
@@ -221,7 +221,7 @@ const summonersRiftLandmarks = [
         "Golems de pierre du côté rouge, à l'entrée de la voie du haut.",
     type: LandmarkType.camp,
     side: LandmarkSide.red,
-    x: 0.420,
-    y: 0.180,
+    x: 0.440,
+    y: 0.170,
   ),
 ];
