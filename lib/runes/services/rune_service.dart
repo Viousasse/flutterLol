@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../../data_dragon/data_dragon_service.dart';
 import '../models/rune.dart';
 
@@ -14,10 +12,10 @@ class RuneService {
     if (cached != null) return cached;
 
     final version = await DataDragonService.latestVersion();
-    final response = await http.get(
-      Uri.parse(DataDragonService.dataUrl(version, 'runesReforged.json')),
+    final response = await DataDragonService.fetchJson(
+      DataDragonService.dataUrl(version, 'runesReforged.json'),
     );
-    final trees = (jsonDecode(response.body) as List)
+    final trees = (response as List)
         .map((json) => RuneTree.fromJson(json))
         .toList();
 

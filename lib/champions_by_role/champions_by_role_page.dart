@@ -3,6 +3,8 @@ import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
 import '../champions/widgets/champion_card/champion_card.dart';
 import '../champions/widgets/champions_search_bar/champions_search_bar.dart';
+import '../shared/errors/user_message.dart';
+import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_theme.dart';
 
 class ChampionsByRolePage extends StatefulWidget {
@@ -18,6 +20,7 @@ class _ChampionsByRolePageState extends State<ChampionsByRolePage> {
   List<Champion> allRoleChampions = [];
   List<Champion> filteredChampions = [];
   bool isLoading = true;
+  String? errorMessage;
   String query = '';
 
   @override
@@ -27,13 +30,30 @@ class _ChampionsByRolePageState extends State<ChampionsByRolePage> {
   }
 
   Future<void> loadChampions() async {
-    final allChampions = await ChampionService.fetchAll();
+    try {
+      final allChampions = await ChampionService.fetchAll();
+      if (!mounted) return;
+      setState(() {
+        allRoleChampions =
+            allChampions.where((c) => c.tags.contains(widget.role)).toList();
+        filteredChampions = allRoleChampions;
+        isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = userMessageFor(error);
+        isLoading = false;
+      });
+    }
+  }
+
+  void retry() {
     setState(() {
-      allRoleChampions =
-          allChampions.where((c) => c.tags.contains(widget.role)).toList();
-      filteredChampions = allRoleChampions;
-      isLoading = false;
+      isLoading = true;
+      errorMessage = null;
     });
+    loadChampions();
   }
 
   void applyFilter(String value) {
@@ -51,33 +71,43 @@ class _ChampionsByRolePageState extends State<ChampionsByRolePage> {
       appBar: AppBar(
         title: Text(widget.role, style: AppTheme.serif(size: 24)),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: Column(
-                children: [
-                  ChampionsSearchBar(onChanged: applyFilter),
-                  const SizedBox(height: 14),
-                  Expanded(
-                    child: GridView.builder(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.82,
-                      ),
-                      itemCount: filteredChampions.length,
-                      itemBuilder: (context, index) {
-                        return ChampionCard(champion: filteredChampions[index]);
-                      },
-                    ),
-                  ),
-                ],
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    final failure = errorMessage;
+    if (failure != null) {
+      return ErrorRetryView(message: failure, onRetry: retry);
+    }
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      child: Column(
+        children: [
+          ChampionsSearchBar(onChanged: applyFilter),
+          const SizedBox(height: 14),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.only(bottom: 20),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.82,
               ),
+              itemCount: filteredChampions.length,
+              itemBuilder: (context, index) {
+                return ChampionCard(champion: filteredChampions[index]);
+              },
             ),
+          ),
+        ],
+      ),
     );
   }
 }

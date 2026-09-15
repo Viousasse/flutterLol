@@ -1,9 +1,16 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'data_dragon_exception.dart';
+
 class DataDragonService {
   static const _baseUrl = 'https://ddragon.leagueoflegends.com';
+
+  /// Au-delà, on considère le CDN injoignable : mieux vaut rendre la main à
+  /// l'utilisateur avec un « Réessayer » que de le laisser attendre.
+  static const _timeout = Duration(seconds: 15);
 
   static Future<String>? _pendingVersion;
 
@@ -22,13 +29,49 @@ class DataDragonService {
 
   static Future<String> _fetchLatestVersion() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/api/versions.json'));
-      final versions = jsonDecode(response.body) as List;
+      final versions = await fetchJson('$_baseUrl/api/versions.json') as List;
+      if (versions.isEmpty) {
+        throw const DataDragonException('Aucune version de jeu publiée.');
+      }
 
       return versions.first as String;
-    } catch (error) {
+    } catch (_) {
+      // Un échec ne doit pas se figer dans le cache : le prochain appel doit
+      // pouvoir retenter, sinon le « Réessayer » des écrans ne sert à rien.
       _pendingVersion = null;
       rethrow;
+    }
+  }
+
+  /// Récupère et décode un document JSON de Data Dragon.
+  ///
+  /// Toute panne — réseau coupé, CDN en erreur, corps illisible — ressort en
+  /// [DataDragonException] portant un message affichable.
+  static Future<dynamic> fetchJson(String url) async {
+    final http.Response response;
+
+    try {
+      response = await http.get(Uri.parse(url)).timeout(_timeout);
+    } on TimeoutException {
+      throw const DataDragonException(
+        'Le serveur de Riot met trop de temps à répondre.',
+      );
+    } catch (_) {
+      throw const DataDragonException(
+        'Connexion au serveur de Riot impossible. Vérifie ta connexion.',
+      );
+    }
+
+    if (response.statusCode != 200) {
+      throw DataDragonException(
+        'Le serveur de Riot a répondu ${response.statusCode}.',
+      );
+    }
+
+    try {
+      return jsonDecode(response.body);
+    } on FormatException {
+      throw const DataDragonException('Réponse illisible du serveur de Riot.');
     }
   }
 

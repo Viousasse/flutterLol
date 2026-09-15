@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
+import '../data_dragon/data_dragon_exception.dart';
+import '../shared/errors/user_message.dart';
+import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_colors.dart';
 import 'widgets/home_greeting/home_greeting.dart';
 import 'widgets/champion_hero_card/champion_hero_card.dart';
@@ -22,6 +25,7 @@ class _HomePageState extends State<HomePage> {
   Champion? championOfTheDay;
   List<Champion> storyPicks = [];
   bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
@@ -30,20 +34,41 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> loadData() async {
-    final result = await ChampionService.fetchAll();
-    final now = DateTime.now();
-    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
-    final index = dayOfYear % result.length;
+    try {
+      final result = await ChampionService.fetchAll();
+      if (result.isEmpty) {
+        throw const DataDragonException('Aucun champion reçu.');
+      }
 
+      final now = DateTime.now();
+      final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
+      final index = dayOfYear % result.length;
+
+      if (!mounted) return;
+      setState(() {
+        champions = result;
+        championOfTheDay = result[index];
+        storyPicks = [
+          result[(index + 7) % result.length],
+          result[(index + 21) % result.length],
+        ];
+        isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = userMessageFor(error);
+        isLoading = false;
+      });
+    }
+  }
+
+  void retry() {
     setState(() {
-      champions = result;
-      championOfTheDay = result[index];
-      storyPicks = [
-        result[(index + 7) % result.length],
-        result[(index + 21) % result.length],
-      ];
-      isLoading = false;
+      isLoading = true;
+      errorMessage = null;
     });
+    loadData();
   }
 
   @override
@@ -51,6 +76,15 @@ class _HomePageState extends State<HomePage> {
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final failure = errorMessage;
+    if (failure != null) {
+      return Scaffold(
+        body: SafeArea(
+          child: ErrorRetryView(message: failure, onRetry: retry),
+        ),
       );
     }
 

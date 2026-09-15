@@ -10,6 +10,8 @@ import '../items/widgets/item_recipe_section/item_recipe_section.dart';
 import '../recommendations/models/champion_recommendations.dart';
 import '../recommendations/models/role_recommendation.dart';
 import '../runes/services/rune_service.dart';
+import '../shared/errors/user_message.dart';
+import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import 'widgets/ability_tile/ability_tile.dart';
 import 'widgets/champion_hero_banner/champion_hero_banner.dart';
 import 'widgets/rune_plan_section/rune_plan_section.dart';
@@ -28,6 +30,7 @@ class ChampionDetailPage extends StatefulWidget {
 class _ChampionDetailPageState extends State<ChampionDetailPage> {
   ChampionDetail? detail;
   bool isLoading = true;
+  String? errorMessage;
   bool isFavorite = false;
 
   RoleRecommendation? recommendation;
@@ -42,30 +45,56 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
   }
 
   Future<void> loadDetail() async {
-    final result = await ChampionService.fetchDetail(widget.championId);
-    setState(() {
-      detail = result;
-      isLoading = false;
-    });
-    loadRecommendation(result.tags);
+    try {
+      final result = await ChampionService.fetchDetail(widget.championId);
+      if (!mounted) return;
+      setState(() {
+        detail = result;
+        isLoading = false;
+      });
+      loadRecommendation(result.tags);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = userMessageFor(error);
+        isLoading = false;
+      });
+    }
   }
 
+  void retry() {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+      isLoadingRecommendation = true;
+    });
+    loadDetail();
+  }
+
+  /// Les conseils sont un bonus : s'ils ne chargent pas, la fiche du champion
+  /// reste lisible, on masque simplement la section.
   Future<void> loadRecommendation(List<String> tags) async {
     final roleRecommendation = ChampionRecommendations.forChampion(
       widget.championId,
       tags,
     );
-    final items = await Future.wait([
-      RuneService.fetchAll(),
-      ItemService.byIds(roleRecommendation.itemIds),
-    ]);
 
-    if (!mounted) return;
-    setState(() {
-      recommendation = roleRecommendation;
-      recommendedItems = items[1] as List<Item>;
-      isLoadingRecommendation = false;
-    });
+    try {
+      final loaded = await Future.wait([
+        RuneService.fetchAll(),
+        ItemService.byIds(roleRecommendation.itemIds),
+      ]);
+
+      if (!mounted) return;
+      setState(() {
+        recommendation = roleRecommendation;
+        recommendedItems = loaded[1] as List<Item>;
+        isLoadingRecommendation = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => isLoadingRecommendation = false);
+    }
   }
 
   Future<void> loadFavoriteStatus() async {
@@ -87,6 +116,14 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final failure = errorMessage;
+    if (failure != null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: ErrorRetryView(message: failure, onRetry: retry),
       );
     }
 

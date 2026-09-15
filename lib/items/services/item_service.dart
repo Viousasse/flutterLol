@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../../data_dragon/data_dragon_service.dart';
 import '../models/item.dart';
 import '../models/item_stack.dart';
@@ -16,10 +14,9 @@ class ItemService {
 
     final version = await DataDragonService.latestVersion();
 
-    final itemsResponse = await http.get(
-      Uri.parse(DataDragonService.dataUrl(version, 'item.json')),
+    final data = await DataDragonService.fetchJson(
+      DataDragonService.dataUrl(version, 'item.json'),
     );
-    final data = jsonDecode(itemsResponse.body);
     final itemsMap = data['data'] as Map<String, dynamic>;
 
     final parsedItems = itemsMap.entries

@@ -4,6 +4,8 @@ import 'services/champion_service.dart';
 import 'widgets/champion_card/champion_card.dart';
 import 'widgets/champions_search_bar/champions_search_bar.dart';
 import 'widgets/role_filter_bar/role_filter_bar.dart';
+import '../shared/errors/user_message.dart';
+import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -18,6 +20,7 @@ class _ChampionsPageState extends State<ChampionsPage> {
   List<Champion> allChampions = [];
   List<Champion> filteredChampions = [];
   bool isLoading = true;
+  String? errorMessage;
   String query = '';
   String? selectedRole;
 
@@ -28,12 +31,29 @@ class _ChampionsPageState extends State<ChampionsPage> {
   }
 
   Future<void> loadChampions() async {
-    final result = await ChampionService.fetchAll();
+    try {
+      final result = await ChampionService.fetchAll();
+      if (!mounted) return;
+      setState(() {
+        allChampions = result;
+        filteredChampions = result;
+        isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = userMessageFor(error);
+        isLoading = false;
+      });
+    }
+  }
+
+  void retry() {
     setState(() {
-      allChampions = result;
-      filteredChampions = result;
-      isLoading = false;
+      isLoading = true;
+      errorMessage = null;
     });
+    loadChampions();
   }
 
   void applyFilters() {
@@ -50,6 +70,15 @@ class _ChampionsPageState extends State<ChampionsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final failure = errorMessage;
+    if (failure != null) {
+      return Scaffold(
+        body: SafeArea(
+          child: ErrorRetryView(message: failure, onRetry: retry),
+        ),
+      );
+    }
+
     return Scaffold(
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

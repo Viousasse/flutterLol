@@ -8,7 +8,8 @@ import 'widgets/item_tier_bar/item_tier_bar.dart';
 import 'widgets/item_profile_bar/item_profile_bar.dart';
 import 'widgets/item_sort_button/item_sort_button.dart';
 import 'widgets/item_detail_sheet/item_detail_sheet.dart';
-import '../theme/app_colors.dart';
+import '../shared/errors/user_message.dart';
+import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_theme.dart';
 
 class ItemsPage extends StatefulWidget {
@@ -22,6 +23,7 @@ class _ItemsPageState extends State<ItemsPage> {
   List<Item> allItems = [];
   List<Item> filteredItems = [];
   bool isLoading = true;
+  String? errorMessage;
   String query = '';
   ItemTier? selectedTier;
   ItemProfile? selectedProfile;
@@ -34,12 +36,29 @@ class _ItemsPageState extends State<ItemsPage> {
   }
 
   Future<void> loadItems() async {
-    final result = await ItemService.fetchAll();
+    try {
+      final result = await ItemService.fetchAll();
+      if (!mounted) return;
+      setState(() {
+        allItems = result;
+        filteredItems = result;
+        isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = userMessageFor(error);
+        isLoading = false;
+      });
+    }
+  }
+
+  void retry() {
     setState(() {
-      allItems = result;
-      filteredItems = result;
-      isLoading = false;
+      isLoading = true;
+      errorMessage = null;
     });
+    loadItems();
   }
 
   void applyFilters() {
@@ -77,6 +96,15 @@ class _ItemsPageState extends State<ItemsPage> {
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final failure = errorMessage;
+    if (failure != null) {
+      return Scaffold(
+        body: SafeArea(
+          child: ErrorRetryView(message: failure, onRetry: retry),
+        ),
       );
     }
 
