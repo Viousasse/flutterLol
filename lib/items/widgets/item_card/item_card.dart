@@ -38,14 +38,19 @@ class ItemCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              item.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.instrumentSans(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+            // Flexible et non Expanded : le nom garde sa hauteur naturelle, le
+            // prix reste donc collé dessous. On lui pose juste une limite pour
+            // qu'un nom sur deux lignes ne fasse pas déborder la carte.
+            Flexible(
+              child: Text(
+                item.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(height: 6),

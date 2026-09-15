@@ -161,7 +161,9 @@ class _ItemsPageState extends State<ItemsPage> {
                     crossAxisCount: 3,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.72,
+                    // Assez haut pour un nom sur deux lignes jusqu'à 360px de
+                    // large, sans quoi la deuxième ligne est rognée.
+                    childAspectRatio: 0.66,
                   ),
                   itemCount: filteredItems.length,
                   itemBuilder: (context, index) {
