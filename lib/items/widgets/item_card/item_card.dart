@@ -32,18 +32,24 @@ class ItemCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const _MissingIcon(),
                 ),
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              item.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.instrumentSans(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+            // Le nom prend la place qui reste au lieu de la réclamer : sur un
+            // écran étroit, un nom sur deux lignes faisait déborder la carte.
+            Expanded(
+              child: Text(
+                item.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(height: 6),
@@ -59,6 +65,27 @@ class ItemCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Remplace l'icône quand Riot ne la sert pas : sans ça, `Image.network`
+/// affiche son propre bloc d'erreur et casse la grille.
+class _MissingIcon extends StatelessWidget {
+  const _MissingIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 56,
+      alignment: Alignment.center,
+      color: AppColors.background,
+      child: Icon(
+        Icons.hide_image_outlined,
+        size: 20,
+        color: AppColors.textMuted,
       ),
     );
   }
