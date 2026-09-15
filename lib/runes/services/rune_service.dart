@@ -3,14 +3,35 @@ import '../models/rune.dart';
 
 class RuneService {
   static List<RuneTree>? _cache;
+  static Future<List<RuneTree>>? _pending;
 
   static final Map<String, RuneTree> _treeByKey = {};
   static final Map<String, Rune> _runeByKey = {};
 
-  static Future<List<RuneTree>> fetchAll() async {
+  /// Le futur en cours est mis en cache, pas seulement son résultat : deux
+  /// fiches champion ouvertes coup sur coup ne retéléchargent pas les runes.
+  static Future<List<RuneTree>> fetchAll() {
     final cached = _cache;
-    if (cached != null) return cached;
+    if (cached != null) return Future.value(cached);
 
+    final pending = _pending;
+    if (pending != null) return pending;
+
+    final request = _fetchAll();
+    _pending = request;
+
+    return request;
+  }
+
+  static Future<List<RuneTree>> _fetchAll() async {
+    try {
+      return await _download();
+    } finally {
+      _pending = null;
+    }
+  }
+
+  static Future<List<RuneTree>> _download() async {
     final version = await DataDragonService.latestVersion();
     final response = await DataDragonService.fetchJson(
       DataDragonService.dataUrl(version, 'runesReforged.json'),

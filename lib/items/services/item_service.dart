@@ -4,35 +4,54 @@ import '../models/item_stack.dart';
 
 class ItemService {
   static List<Item>? _cache;
+  static Future<List<Item>>? _pending;
 
   /// Associe **chaque** identifiant Riot à l'objet retenu, y compris les
   /// identifiants des doublons écartés : les recettes les référencent encore.
   static final Map<String, Item> _indexById = {};
 
-  static Future<List<Item>> fetchAll() async {
-    if (_cache != null) return _cache!;
+  /// Le futur en cours est mis en cache, pas seulement son résultat : l'onglet
+  /// Objets et les conseils d'une fiche champion peuvent demander la liste en
+  /// même temps, et téléchargeaient sinon item.json chacun de leur côté.
+  static Future<List<Item>> fetchAll() {
+    final cached = _cache;
+    if (cached != null) return Future.value(cached);
 
-    final version = await DataDragonService.latestVersion();
+    final pending = _pending;
+    if (pending != null) return pending;
 
-    final data = await DataDragonService.fetchJson(
-      DataDragonService.dataUrl(version, 'item.json'),
-    );
-    final itemsMap = data['data'] as Map<String, dynamic>;
+    final request = _fetchAll();
+    _pending = request;
 
-    final parsedItems = itemsMap.entries
-        .where((entry) => Item.isAvailable(entry.key, entry.value))
-        .map((entry) => Item.fromJson(entry.key, entry.value, version))
-        .toList();
+    return request;
+  }
 
-    _indexById
-      ..clear()
-      ..addAll(_buildIndex(parsedItems));
+  static Future<List<Item>> _fetchAll() async {
+    try {
+      final version = await DataDragonService.latestVersion();
 
-    final uniqueItems = _indexById.values.toSet().toList();
-    uniqueItems.sort((a, b) => a.name.compareTo(b.name));
-    _cache = uniqueItems;
+      final data = await DataDragonService.fetchJson(
+        DataDragonService.dataUrl(version, 'item.json'),
+      );
+      final itemsMap = data['data'] as Map<String, dynamic>;
 
-    return _cache!;
+      final parsedItems = itemsMap.entries
+          .where((entry) => Item.isAvailable(entry.key, entry.value))
+          .map((entry) => Item.fromJson(entry.key, entry.value, version))
+          .toList();
+
+      _indexById
+        ..clear()
+        ..addAll(_buildIndex(parsedItems));
+
+      final uniqueItems = _indexById.values.toSet().toList();
+      uniqueItems.sort((a, b) => a.name.compareTo(b.name));
+      _cache = uniqueItems;
+
+      return uniqueItems;
+    } finally {
+      _pending = null;
+    }
   }
 
   /// Riot publie plusieurs identifiants pour un même objet (variantes de mode,
