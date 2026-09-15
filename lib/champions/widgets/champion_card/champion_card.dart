@@ -32,6 +32,10 @@ class _ChampionCardState extends State<ChampionCard> {
 
   Future<void> loadFavoriteStatus() async {
     final favorite = await FavoritesService.isFavorite(widget.champion.id);
+
+    // Une grille recycle ses cartes en permanence : celle-ci peut avoir été
+    // détruite avant que la lecture des favoris ne réponde.
+    if (!mounted) return;
     setState(() {
       isFavorite = favorite;
     });
@@ -39,6 +43,8 @@ class _ChampionCardState extends State<ChampionCard> {
 
   Future<void> toggleFavorite() async {
     await FavoritesService.toggleFavorite(widget.champion.id);
+
+    if (!mounted) return;
     setState(() {
       isFavorite = !isFavorite;
     });

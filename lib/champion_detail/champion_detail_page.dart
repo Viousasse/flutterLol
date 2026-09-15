@@ -99,6 +99,8 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
 
   Future<void> loadFavoriteStatus() async {
     final favorite = await FavoritesService.isFavorite(widget.championId);
+
+    if (!mounted) return;
     setState(() {
       isFavorite = favorite;
     });
@@ -106,6 +108,8 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
 
   Future<void> toggleFavorite() async {
     await FavoritesService.toggleFavorite(widget.championId);
+
+    if (!mounted) return;
     setState(() {
       isFavorite = !isFavorite;
     });
