@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../data_dragon/data_dragon_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -8,6 +9,11 @@ import 'widgets/map_landmark_details/map_landmark_details.dart';
 import 'widgets/map_placeholder/map_placeholder.dart';
 import 'widgets/map_type_bar/map_type_bar.dart';
 import 'widgets/summoners_rift_map/summoners_rift_map.dart';
+import '../regions/runeterra_board.dart';
+import '../shared/widgets/app_filter_chip/app_filter_chip.dart';
+
+/// Les deux cartes de l'onglet : le terrain de jeu et le monde du lore.
+enum MapBoard { rift, runeterra }
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -21,6 +27,7 @@ class _MapPageState extends State<MapPage> {
 
   late final Future<String> _version = DataDragonService.latestVersion();
 
+  MapBoard board = MapBoard.rift;
   LandmarkType? selectedType;
   MapLandmark? selectedLandmark;
   bool calibrating = false;
@@ -33,9 +40,19 @@ class _MapPageState extends State<MapPage> {
     return summonersRiftLandmarks.where((l) => l.type == type).toList();
   }
 
+  void _selectBoard(MapBoard next) {
+    setState(() {
+      board = next;
+      calibrating = false;
+      selectedLandmark = null;
+    });
+  }
+
   void _selectLandmark(MapLandmark landmark) {
     setState(() {
-      selectedLandmark = identical(landmark, selectedLandmark) ? null : landmark;
+      selectedLandmark = identical(landmark, selectedLandmark)
+          ? null
+          : landmark;
     });
   }
 
@@ -75,6 +92,8 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+    final onRift = board == MapBoard.rift;
+
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -85,43 +104,74 @@ class _MapPageState extends State<MapPage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text('Carte', style: AppTheme.serif(size: 32)),
-                GestureDetector(
-                  onTap: _toggleCalibration,
-                  child: Text(
-                    calibrating
-                        ? 'calibrage'
-                        : '${_visibleLandmarks.length} lieux',
-                    style: AppTheme.mono(
-                      color:
-                          calibrating ? AppColors.accent : AppColors.textMuted,
+                if (onRift)
+                  GestureDetector(
+                    onTap: _toggleCalibration,
+                    child: Text(
+                      calibrating
+                          ? 'calibrage'
+                          : '${_visibleLandmarks.length} lieux',
+                      style: AppTheme.mono(
+                        color: calibrating
+                            ? AppColors.accent
+                            : AppColors.textMuted,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              "Faille de l'invocateur",
+              onRift ? "Faille de l'invocateur" : 'Le monde de Runeterra',
               style: AppTheme.mono(color: AppColors.textMuted),
             ),
             const SizedBox(height: 14),
-            MapTypeBar(selectedType: selectedType, onSelect: _selectType),
+            _boardSwitcher(),
             const SizedBox(height: 12),
-            FutureBuilder<String>(future: _version, builder: _buildMap),
-            const SizedBox(height: 8),
-            Text(
-              'Pincez pour zoomer.',
-              style: AppTheme.mono(size: 9, color: AppColors.textMuted),
-            ),
-            const SizedBox(height: 12),
-            if (calibrating)
-              MapCalibrationPanel(point: tappedPoint)
-            else
-              MapLandmarkDetails(landmark: selectedLandmark),
+            if (onRift) ..._riftBoard() else const RuneterraBoard(),
           ],
         ),
       ),
     );
+  }
+
+  Widget _boardSwitcher() {
+    return SizedBox(
+      height: 34,
+      child: Row(
+        children: [
+          AppFilterChip(
+            label: 'Faille',
+            selected: board == MapBoard.rift,
+            onTap: () => _selectBoard(MapBoard.rift),
+          ),
+          const SizedBox(width: 7),
+          AppFilterChip(
+            label: 'Runeterra',
+            selected: board == MapBoard.runeterra,
+            onTap: () => _selectBoard(MapBoard.runeterra),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _riftBoard() {
+    return [
+      MapTypeBar(selectedType: selectedType, onSelect: _selectType),
+      const SizedBox(height: 12),
+      FutureBuilder<String>(future: _version, builder: _buildMap),
+      const SizedBox(height: 8),
+      Text(
+        'Pincez pour zoomer.',
+        style: AppTheme.mono(size: 9, color: AppColors.textMuted),
+      ),
+      const SizedBox(height: 12),
+      if (calibrating)
+        MapCalibrationPanel(point: tappedPoint)
+      else
+        MapLandmarkDetails(landmark: selectedLandmark),
+    ];
   }
 
   Widget _buildMap(BuildContext context, AsyncSnapshot<String> snapshot) {
