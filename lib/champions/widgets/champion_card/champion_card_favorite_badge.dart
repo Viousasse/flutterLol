@@ -21,7 +21,7 @@ class ChampionCardFavoriteBadge extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: AppColors.background.withOpacity(0.55),
+            color: AppColors.background.withValues(alpha: 0.55),
             shape: BoxShape.circle,
           ),
           child: Icon(

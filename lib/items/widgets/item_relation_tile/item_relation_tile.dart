@@ -47,7 +47,7 @@ class ItemRelationTile extends StatelessWidget {
                               height: 44,
                               alignment: Alignment.center,
                               color: AppColors.background,
-                              child: Icon(
+                              child: const Icon(
                                 Icons.image_not_supported_outlined,
                                 size: 16,
                                 color: AppColors.textMuted,

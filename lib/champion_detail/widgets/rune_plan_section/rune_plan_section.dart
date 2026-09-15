@@ -145,7 +145,7 @@ class _RuneChip extends StatelessWidget {
             ),
             child: Image.network(
               rune.iconUrl,
-              errorBuilder: (context, error, stackTrace) => Icon(
+              errorBuilder: (context, error, stackTrace) => const Icon(
                 Icons.circle_outlined,
                 size: 14,
                 color: AppColors.textMuted,

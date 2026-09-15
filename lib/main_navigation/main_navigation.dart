@@ -82,11 +82,11 @@ class _MainNavigationState extends State<MainNavigation> {
                     decoration: BoxDecoration(
                       color: selected
                           ? AppColors.accentSoft
-                          : AppColors.textPrimary.withOpacity(0.04),
+                          : AppColors.textPrimary.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: selected
-                            ? AppColors.accent.withOpacity(0.35)
+                            ? AppColors.accent.withValues(alpha: 0.35)
                             : AppColors.border,
                       ),
                     ),

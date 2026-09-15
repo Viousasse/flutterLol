@@ -55,7 +55,7 @@ class ItemCard extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: [
-                Icon(Icons.circle, size: 8, color: AppColors.accent),
+                const Icon(Icons.circle, size: 8, color: AppColors.accent),
                 const SizedBox(width: 5),
                 Text(
                   '${item.gold}',
@@ -82,7 +82,7 @@ class _MissingIcon extends StatelessWidget {
       height: 56,
       alignment: Alignment.center,
       color: AppColors.background,
-      child: Icon(
+      child: const Icon(
         Icons.hide_image_outlined,
         size: 20,
         color: AppColors.textMuted,

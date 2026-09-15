@@ -77,7 +77,7 @@ class _Label extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(selected ? 0.92 : 0.7),
+        color: AppColors.background.withValues(alpha: selected ? 0.92 : 0.7),
         borderRadius: BorderRadius.circular(4),
         border: selected ? Border.all(color: landmark.color) : null,
       ),

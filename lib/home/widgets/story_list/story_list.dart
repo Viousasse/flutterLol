@@ -17,7 +17,7 @@ class StoryList extends StatelessWidget {
         return Container(
           margin: const EdgeInsets.only(bottom: 9),
           child: Material(
-            color: AppColors.textPrimary.withOpacity(0.04),
+            color: AppColors.textPrimary.withValues(alpha: 0.04),
             borderRadius: BorderRadius.circular(14),
             child: InkWell(
               borderRadius: BorderRadius.circular(14),
@@ -33,7 +33,7 @@ class StoryList extends StatelessWidget {
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   border: Border(
                     left: BorderSide(color: AppColors.accent, width: 2),
                   ),

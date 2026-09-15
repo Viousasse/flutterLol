@@ -54,7 +54,7 @@ class ItemSortButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.textPrimary.withOpacity(0.06),
+          color: AppColors.textPrimary.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: AppColors.border),
         ),

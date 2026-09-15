@@ -161,7 +161,7 @@ class _FinalItemNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.check_circle_outline, size: 14, color: AppColors.textMuted),
+        const Icon(Icons.check_circle_outline, size: 14, color: AppColors.textMuted),
         const SizedBox(width: 7),
         Text(
           'Objet final, il ne se construit pas davantage.',

@@ -40,8 +40,8 @@ class ChampionHeroCard extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   stops: const [0.08, 0.62],
                   colors: [
-                    AppColors.background.withOpacity(0.95),
-                    AppColors.background.withOpacity(0.15),
+                    AppColors.background.withValues(alpha: 0.95),
+                    AppColors.background.withValues(alpha: 0.15),
                   ],
                 ),
               ),

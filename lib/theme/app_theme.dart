@@ -11,7 +11,7 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
       primaryColor: AppColors.accent,
-      colorScheme: ColorScheme.dark(
+      colorScheme: const ColorScheme.dark(
         primary: AppColors.accent,
         secondary: AppColors.accent,
         surface: AppColors.surface,
@@ -36,7 +36,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: AppColors.border, width: 1),
+          side: const BorderSide(color: AppColors.border, width: 1),
         ),
       ),
       iconTheme: const IconThemeData(color: AppColors.textPrimary),

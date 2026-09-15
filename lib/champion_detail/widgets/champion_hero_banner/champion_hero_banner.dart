@@ -42,7 +42,7 @@ class ChampionHeroBanner extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    AppColors.background.withOpacity(0.95),
+                    AppColors.background.withValues(alpha: 0.95),
                   ],
                 ),
               ),

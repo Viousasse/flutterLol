@@ -17,7 +17,7 @@ class MapLandmarkDetails extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary.withOpacity(0.04),
+        color: AppColors.textPrimary.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
       ),

@@ -40,7 +40,7 @@ class AbilityTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   ability.description,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12.5,
                     height: 1.4,
                     color: AppColors.textSecondary,

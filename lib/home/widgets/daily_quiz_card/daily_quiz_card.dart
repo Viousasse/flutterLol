@@ -53,7 +53,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary.withOpacity(0.04),
+        color: AppColors.textPrimary.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),

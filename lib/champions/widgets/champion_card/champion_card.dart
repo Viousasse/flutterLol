@@ -84,7 +84,7 @@ class _ChampionCardState extends State<ChampionCard> {
                   stops: const [0.45, 1.0],
                   colors: [
                     Colors.transparent,
-                    AppColors.background.withOpacity(0.92),
+                    AppColors.background.withValues(alpha: 0.92),
                   ],
                 ),
               ),

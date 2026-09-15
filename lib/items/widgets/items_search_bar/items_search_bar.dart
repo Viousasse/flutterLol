@@ -12,13 +12,13 @@ class ItemsSearchBar extends StatelessWidget {
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary.withOpacity(0.06),
+        color: AppColors.textPrimary.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
-          Icon(Icons.search, size: 16, color: AppColors.textMuted),
+          const Icon(Icons.search, size: 16, color: AppColors.textMuted),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -27,7 +27,7 @@ class ItemsSearchBar extends StatelessWidget {
                 color: AppColors.textPrimary,
                 fontSize: 14.5,
               ),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Rechercher un objet',
                 hintStyle: TextStyle(color: AppColors.textMuted),
                 border: InputBorder.none,

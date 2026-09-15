@@ -24,7 +24,7 @@ class RoleRow extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.textPrimary.withOpacity(0.04),
+          color: AppColors.textPrimary.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.border),
         ),
@@ -61,7 +61,7 @@ class RoleRow extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: AppColors.textMuted),
+            const Icon(Icons.chevron_right, color: AppColors.textMuted),
           ],
         ),
       ),
