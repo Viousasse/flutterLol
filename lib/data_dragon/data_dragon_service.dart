@@ -39,4 +39,10 @@ class DataDragonService {
   static String mapImageUrl(String version, String mapId) {
     return '$_baseUrl/cdn/$version/img/map/map$mapId.png';
   }
+
+  /// Les icônes de runes ne sont pas versionnées comme le reste des assets :
+  /// Riot les sert directement sous `cdn/img/`.
+  static String perkIconUrl(String iconPath) {
+    return '$_baseUrl/cdn/img/$iconPath';
+  }
 }

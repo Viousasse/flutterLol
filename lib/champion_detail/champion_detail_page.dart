@@ -2,8 +2,17 @@ import 'package:flutter/material.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
 import '../champions/services/favorites_service.dart';
+import '../items/models/item.dart';
+import '../items/models/item_stack.dart';
+import '../items/services/item_service.dart';
+import '../items/widgets/item_detail_sheet/item_detail_sheet.dart';
+import '../items/widgets/item_recipe_section/item_recipe_section.dart';
+import '../recommendations/models/champion_recommendations.dart';
+import '../recommendations/models/role_recommendation.dart';
+import '../runes/services/rune_service.dart';
 import 'widgets/ability_tile/ability_tile.dart';
 import 'widgets/champion_hero_banner/champion_hero_banner.dart';
+import 'widgets/rune_plan_section/rune_plan_section.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -21,6 +30,10 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
   bool isLoading = true;
   bool isFavorite = false;
 
+  RoleRecommendation? recommendation;
+  List<Item> recommendedItems = const [];
+  bool isLoadingRecommendation = true;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +46,25 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
     setState(() {
       detail = result;
       isLoading = false;
+    });
+    loadRecommendation(result.tags);
+  }
+
+  Future<void> loadRecommendation(List<String> tags) async {
+    final roleRecommendation = ChampionRecommendations.forChampion(
+      widget.championId,
+      tags,
+    );
+    final items = await Future.wait([
+      RuneService.fetchAll(),
+      ItemService.byIds(roleRecommendation.itemIds),
+    ]);
+
+    if (!mounted) return;
+    setState(() {
+      recommendation = roleRecommendation;
+      recommendedItems = items[1] as List<Item>;
+      isLoadingRecommendation = false;
     });
   }
 
@@ -93,6 +125,22 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
                     ability: entry.value,
                   );
                 }),
+                if (!isLoadingRecommendation && recommendation != null) ...[
+                  const SizedBox(height: 14),
+                  Text('Runes conseillées', style: AppTheme.serif(size: 20)),
+                  const SizedBox(height: 10),
+                  RunePlanSection(plan: recommendation!.runes),
+                  const SizedBox(height: 28),
+                  Text('Objets conseillés', style: AppTheme.serif(size: 20)),
+                  const SizedBox(height: 10),
+                  ItemRecipeSection(
+                    title: 'Cœur de build',
+                    stacks: recommendedItems
+                        .map((item) => ItemStack(item: item, count: 1))
+                        .toList(),
+                    onSelect: (item) => ItemDetailSheet.show(context, item),
+                  ),
+                ],
               ]),
             ),
           ),

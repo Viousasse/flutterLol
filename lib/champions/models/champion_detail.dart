@@ -15,6 +15,7 @@ class ChampionDetail {
   final String name;
   final String title;
   final String lore;
+  final List<String> tags;
   final ChampionAbility passive;
   final List<ChampionAbility> spells;
 
@@ -23,6 +24,7 @@ class ChampionDetail {
     required this.name,
     required this.title,
     required this.lore,
+    required this.tags,
     required this.passive,
     required this.spells,
   });
@@ -50,6 +52,7 @@ class ChampionDetail {
       name: json['name'],
       title: json['title'],
       lore: json['lore'] ?? '',
+      tags: List<String>.from(json['tags'] ?? []),
       passive: passive,
       spells: spells,
     );

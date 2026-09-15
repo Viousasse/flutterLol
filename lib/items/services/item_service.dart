@@ -117,6 +117,15 @@ class ItemService {
     return results.map((build) => ItemStack(item: build, count: 1)).toList();
   }
 
+  /// Résout une liste d'identifiants Riot en objets, dans l'ordre donné.
+  ///
+  /// Un identifiant devenu invalide (objet retiré, clé mal recopiée) est
+  /// silencieusement ignoré plutôt que de faire planter l'affichage.
+  static Future<List<Item>> byIds(List<String> ids) async {
+    await fetchAll();
+    return ids.map((id) => _indexById[id]).whereType<Item>().toList();
+  }
+
   /// Une recette répète l'identifiant d'un composant demandé plusieurs fois, et
   /// deux identifiants distincts peuvent viser le même objet retenu : on
   /// regroupe les deux cas en une quantité.

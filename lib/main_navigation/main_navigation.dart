@@ -5,7 +5,6 @@ import '../champions/champions_page.dart';
 import '../roles/roles_page.dart';
 import '../items/items_page.dart';
 import '../map/map_page.dart';
-import '../favorites/favorites_page.dart';
 import '../theme/app_colors.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -24,7 +23,6 @@ class _MainNavigationState extends State<MainNavigation> {
     'Rôles',
     'Objets',
     'Carte',
-    'Favoris',
   ];
 
   Widget _buildPage() {
@@ -39,8 +37,6 @@ class _MainNavigationState extends State<MainNavigation> {
         return const ItemsPage();
       case 4:
         return const MapPage();
-      case 5:
-        return const FavoritesPage();
       default:
         return const HomePage();
     }
