@@ -36,7 +36,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.2.0 
   shared_preferences: ^2.2.3
-  google_fonts: ^6.2.1
   cached_network_image: ^4.0.0
 dev_dependencies:
   flutter_test:
@@ -59,6 +58,32 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Polices embarquées plutôt que téléchargées au premier lancement : le rendu
+  # est correct hors ligne et ne dépend plus de fonts.google.com.
+  # Licences OFL des trois familles dans assets/fonts/.
+  fonts:
+    - family: InstrumentSans
+      fonts:
+        - asset: assets/fonts/InstrumentSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/InstrumentSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/InstrumentSans-SemiBold.ttf
+          weight: 600
+    - family: Spectral
+      fonts:
+        - asset: assets/fonts/Spectral-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Spectral-Italic.ttf
+          weight: 400
+          style: italic
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/JetBrainsMono-Bold.ttf
+          weight: 700
 
   # To add assets to your application, add an assets section, like this:
   # assets:

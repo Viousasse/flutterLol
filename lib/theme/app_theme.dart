@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'app_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
   static ThemeData get theme {
-    final baseTextTheme =
-        GoogleFonts.instrumentSansTextTheme(ThemeData.dark().textTheme);
+    final baseTextTheme = ThemeData.dark().textTheme.apply(
+      fontFamily: AppFonts.sans,
+    );
 
     return ThemeData(
       brightness: Brightness.dark,
@@ -24,7 +26,8 @@ class AppTheme {
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.spectral(
+        titleTextStyle: TextStyle(
+          fontFamily: AppFonts.serif,
           color: AppColors.textPrimary,
           fontSize: 26,
           fontWeight: FontWeight.w400,
@@ -50,7 +53,8 @@ class AppTheme {
     Color? color,
     bool italic = false,
   }) {
-    return GoogleFonts.spectral(
+    return TextStyle(
+      fontFamily: AppFonts.serif,
       fontSize: size,
       fontWeight: weight,
       fontStyle: italic ? FontStyle.italic : FontStyle.normal,
@@ -63,7 +67,8 @@ class AppTheme {
     Color? color,
     double letterSpacing = 1.0,
   }) {
-    return GoogleFonts.jetBrainsMono(
+    return TextStyle(
+      fontFamily: AppFonts.mono,
       fontSize: size,
       fontWeight: FontWeight.w500,
       letterSpacing: letterSpacing,

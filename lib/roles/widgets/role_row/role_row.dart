@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../../champions/constants/roles.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -47,7 +48,8 @@ class RoleRow extends StatelessWidget {
                 children: [
                   Text(
                     role,
-                    style: GoogleFonts.instrumentSans(
+                    style: TextStyle(
+                      fontFamily: AppFonts.sans,
                       fontWeight: FontWeight.w600,
                       fontSize: 14.5,
                       color: AppColors.textPrimary,

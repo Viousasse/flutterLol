@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../models/item.dart';
 import '../../models/item_stack.dart';
 import '../../../theme/app_colors.dart';
@@ -32,7 +33,8 @@ class ItemRecipeSection extends StatelessWidget {
           children: [
             Text(
               title,
-              style: GoogleFonts.instrumentSans(
+              style: TextStyle(
+                fontFamily: AppFonts.sans,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -41,7 +43,8 @@ class ItemRecipeSection extends StatelessWidget {
             const SizedBox(width: 7),
             Text(
               '$_pieceCount',
-              style: GoogleFonts.jetBrainsMono(
+              style: TextStyle(
+                fontFamily: AppFonts.mono,
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textMuted,

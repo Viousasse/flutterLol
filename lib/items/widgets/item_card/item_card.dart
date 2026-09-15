@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../../shared/widgets/remote_image/remote_image.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../theme/app_fonts.dart';
 import '../../models/item.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -45,7 +46,8 @@ class ItemCard extends StatelessWidget {
                 item.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.instrumentSans(
+                style: TextStyle(
+                  fontFamily: AppFonts.sans,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,

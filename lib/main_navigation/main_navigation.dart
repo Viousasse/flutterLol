@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../theme/app_fonts.dart';
 import '../home/home_page.dart';
 import '../champions/champions_page.dart';
 import '../roles/roles_page.dart';
@@ -23,13 +24,7 @@ class _MainNavigationState extends State<MainNavigation> {
   /// onglets que l'utilisateur n'a jamais visités.
   final Set<int> visitedTabs = {0};
 
-  final labels = const [
-    'Accueil',
-    'Champions',
-    'Rôles',
-    'Objets',
-    'Carte',
-  ];
+  final labels = const ['Accueil', 'Champions', 'Rôles', 'Objets', 'Carte'];
 
   Widget _buildPage(int index) {
     if (!visitedTabs.contains(index)) return const SizedBox.shrink();
@@ -61,8 +56,7 @@ class _MainNavigationState extends State<MainNavigation> {
       body: IndexedStack(
         index: currentIndex,
         children: [
-          for (var index = 0; index < labels.length; index++)
-            _buildPage(index),
+          for (var index = 0; index < labels.length; index++) _buildPage(index),
         ],
       ),
       bottomNavigationBar: SafeArea(
@@ -94,11 +88,13 @@ class _MainNavigationState extends State<MainNavigation> {
                       fit: BoxFit.scaleDown,
                       child: Text(
                         labels[index],
-                        style: GoogleFonts.instrumentSans(
+                        style: TextStyle(
+                          fontFamily: AppFonts.sans,
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color:
-                              selected ? AppColors.accent : AppColors.textMuted,
+                          color: selected
+                              ? AppColors.accent
+                              : AppColors.textMuted,
                         ),
                       ),
                     ),

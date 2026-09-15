@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../../champions/models/champion_detail.dart';
 import '../../../theme/app_colors.dart';
 import 'ability_icon.dart';
@@ -31,7 +32,8 @@ class AbilityTile extends StatelessWidget {
               children: [
                 Text(
                   ability.name,
-                  style: GoogleFonts.instrumentSans(
+                  style: TextStyle(
+                    fontFamily: AppFonts.sans,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                     color: AppColors.textPrimary,

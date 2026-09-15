@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../../recommendations/models/role_recommendation.dart';
 import '../../../runes/models/rune.dart';
@@ -103,7 +104,8 @@ class _RuneTreeHeader extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           tree.name,
-          style: GoogleFonts.instrumentSans(
+          style: TextStyle(
+            fontFamily: AppFonts.sans,
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: AppColors.textMuted,
@@ -156,11 +158,14 @@ class _RuneChip extends StatelessWidget {
             maxLines: 2,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.instrumentSans(
+            style: TextStyle(
+              fontFamily: AppFonts.sans,
               fontSize: 10,
               fontWeight: emphasize ? FontWeight.w600 : FontWeight.w500,
               height: 1.25,
-              color: emphasize ? AppColors.textPrimary : AppColors.textSecondary,
+              color: emphasize
+                  ? AppColors.textPrimary
+                  : AppColors.textSecondary,
             ),
           ),
         ],

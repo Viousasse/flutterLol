@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../models/champion.dart';
 import '../../services/favorites_service.dart';
@@ -15,16 +16,14 @@ class ChampionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final role =
-        champion.tags.isNotEmpty ? champion.tags.first : '';
+    final role = champion.tags.isNotEmpty ? champion.tags.first : '';
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                ChampionDetailPage(championId: champion.id),
+            builder: (context) => ChampionDetailPage(championId: champion.id),
           ),
         );
       },
@@ -71,7 +70,8 @@ class ChampionCard extends StatelessWidget {
                 children: [
                   Text(
                     champion.name,
-                    style: GoogleFonts.instrumentSans(
+                    style: TextStyle(
+                      fontFamily: AppFonts.sans,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,

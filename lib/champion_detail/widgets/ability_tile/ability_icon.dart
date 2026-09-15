@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../../shared/widgets/remote_image/remote_image.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../theme/app_fonts.dart';
 import '../../../theme/app_colors.dart';
 
 class AbilityIcon extends StatelessWidget {
@@ -35,11 +36,11 @@ class AbilityIcon extends StatelessWidget {
               ),
               child: Text(
                 label,
-                style: GoogleFonts.jetBrainsMono(
+                style: TextStyle(
+                  fontFamily: AppFonts.mono,
                   fontWeight: FontWeight.w700,
                   fontSize: 9,
-                  color:
-                      label == 'R' ? AppColors.background : AppColors.accent,
+                  color: label == 'R' ? AppColors.background : AppColors.accent,
                 ),
               ),
             ),

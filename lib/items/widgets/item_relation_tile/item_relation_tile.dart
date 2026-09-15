@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../models/item_stack.dart';
 import '../../../theme/app_colors.dart';
@@ -69,7 +70,8 @@ class ItemRelationTile extends StatelessWidget {
                   maxLines: 2,
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.instrumentSans(
+                  style: TextStyle(
+                    fontFamily: AppFonts.sans,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w500,
                     height: 1.25,
@@ -106,7 +108,8 @@ class _QuantityBadge extends StatelessWidget {
       ),
       child: Text(
         '×$count',
-        style: GoogleFonts.jetBrainsMono(
+        style: TextStyle(
+          fontFamily: AppFonts.mono,
           fontSize: 9,
           fontWeight: FontWeight.w700,
           color: AppColors.background,

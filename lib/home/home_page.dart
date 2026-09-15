@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../theme/app_fonts.dart';
 import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
 import '../data_dragon/data_dragon_exception.dart';
@@ -74,9 +75,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final failure = errorMessage;
@@ -136,7 +135,8 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
         label,
-        style: GoogleFonts.instrumentSans(
+        style: TextStyle(
+          fontFamily: AppFonts.sans,
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,

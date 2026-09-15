@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../../champions/constants/roles.dart';
 import '../../../champions/models/champion.dart';
 import '../../../champions_by_role/champions_by_role_page.dart';
@@ -74,7 +75,8 @@ class _RoleCard extends StatelessWidget {
             const Spacer(),
             Text(
               role,
-              style: GoogleFonts.instrumentSans(
+              style: TextStyle(
+                fontFamily: AppFonts.sans,
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,

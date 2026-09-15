@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../../favorites/favorites_page.dart';
 import '../../../theme/app_colors.dart';
 
@@ -27,7 +28,8 @@ class FavoritesShortcut extends StatelessWidget {
           children: [
             Text(
               'Mes champions favoris',
-              style: GoogleFonts.instrumentSans(
+              style: TextStyle(
+                fontFamily: AppFonts.sans,
                 fontWeight: FontWeight.w600,
                 fontSize: 13.5,
                 color: AppColors.textPrimary,

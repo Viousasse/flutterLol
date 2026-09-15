@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../constants/map_landmarks.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -64,7 +65,8 @@ class _Details extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           landmark.description,
-          style: GoogleFonts.instrumentSans(
+          style: TextStyle(
+            fontFamily: AppFonts.sans,
             fontSize: 13,
             height: 1.5,
             color: AppColors.textSecondary,

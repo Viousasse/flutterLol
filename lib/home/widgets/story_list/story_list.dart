@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../../champions/models/champion.dart';
 import '../../../champion_detail/champion_detail_page.dart';
 import '../../../theme/app_colors.dart';
@@ -31,8 +32,10 @@ class StoryList extends StatelessWidget {
                 );
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 14,
+                ),
                 decoration: const BoxDecoration(
                   border: Border(
                     left: BorderSide(color: AppColors.accent, width: 2),
@@ -43,7 +46,8 @@ class StoryList extends StatelessWidget {
                   children: [
                     Text(
                       champion.name,
-                      style: GoogleFonts.instrumentSans(
+                      style: TextStyle(
+                        fontFamily: AppFonts.sans,
                         fontWeight: FontWeight.w600,
                         fontSize: 13.5,
                         color: AppColors.textPrimary,

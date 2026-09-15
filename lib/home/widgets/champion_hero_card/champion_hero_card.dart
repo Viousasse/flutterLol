@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../../shared/widgets/remote_image/remote_image.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../theme/app_fonts.dart';
 import '../../../champions/models/champion.dart';
 import '../../../champion_detail/champion_detail_page.dart';
 import '../../../theme/app_colors.dart';
@@ -51,8 +52,7 @@ class ChampionHeroCard extends StatelessWidget {
               top: 14,
               left: 14,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.accent,
                   borderRadius: BorderRadius.circular(5),
@@ -105,8 +105,7 @@ class _HeroCaption extends StatelessWidget {
           children: [
             if (champion.tags.isNotEmpty)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
                 decoration: BoxDecoration(
                   color: AppColors.accentSoft,
                   borderRadius: BorderRadius.circular(4),
@@ -119,7 +118,8 @@ class _HeroCaption extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               'Lire son histoire ›',
-              style: GoogleFonts.instrumentSans(
+              style: TextStyle(
+                fontFamily: AppFonts.sans,
                 fontSize: 11.5,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w500,

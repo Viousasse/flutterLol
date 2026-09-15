@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/app_fonts.dart';
 import '../../models/item.dart';
 import '../../models/item_stack.dart';
 import '../../services/item_service.dart';
@@ -71,7 +72,8 @@ class _ItemDetailSheetState extends State<ItemDetailSheet> {
               const SizedBox(height: 16),
               Text(
                 _currentItem.description,
-                style: GoogleFonts.instrumentSans(
+                style: TextStyle(
+                  fontFamily: AppFonts.sans,
                   fontSize: 13.5,
                   height: 1.5,
                   color: AppColors.textSecondary,
