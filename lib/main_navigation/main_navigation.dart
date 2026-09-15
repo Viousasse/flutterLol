@@ -17,6 +17,12 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int currentIndex = 0;
 
+  /// Un onglet n'est construit qu'une fois ouvert, puis gardé vivant par
+  /// l'IndexedStack : y revenir retrouve son défilement, sa recherche et ses
+  /// filtres, sans pour autant télécharger au démarrage les données des
+  /// onglets que l'utilisateur n'a jamais visités.
+  final Set<int> visitedTabs = {0};
+
   final labels = const [
     'Accueil',
     'Champions',
@@ -25,10 +31,10 @@ class _MainNavigationState extends State<MainNavigation> {
     'Carte',
   ];
 
-  Widget _buildPage() {
-    switch (currentIndex) {
-      case 0:
-        return const HomePage();
+  Widget _buildPage(int index) {
+    if (!visitedTabs.contains(index)) return const SizedBox.shrink();
+
+    switch (index) {
       case 1:
         return const ChampionsPage();
       case 2:
@@ -42,10 +48,23 @@ class _MainNavigationState extends State<MainNavigation> {
     }
   }
 
+  void _openTab(int index) {
+    setState(() {
+      currentIndex = index;
+      visitedTabs.add(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildPage(),
+      body: IndexedStack(
+        index: currentIndex,
+        children: [
+          for (var index = 0; index < labels.length; index++)
+            _buildPage(index),
+        ],
+      ),
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -55,11 +74,7 @@ class _MainNavigationState extends State<MainNavigation> {
               final selected = currentIndex == index;
               return Expanded(
                 child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      currentIndex = index;
-                    });
-                  },
+                  onTap: () => _openTab(index),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     height: 44,
