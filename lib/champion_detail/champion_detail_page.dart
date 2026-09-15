@@ -31,7 +31,6 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
   ChampionDetail? detail;
   bool isLoading = true;
   String? errorMessage;
-  bool isFavorite = false;
 
   RoleRecommendation? recommendation;
   List<Item> recommendedItems = const [];
@@ -41,7 +40,6 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
   void initState() {
     super.initState();
     loadDetail();
-    loadFavoriteStatus();
   }
 
   Future<void> loadDetail() async {
@@ -97,24 +95,6 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
     }
   }
 
-  Future<void> loadFavoriteStatus() async {
-    final favorite = await FavoritesService.isFavorite(widget.championId);
-
-    if (!mounted) return;
-    setState(() {
-      isFavorite = favorite;
-    });
-  }
-
-  Future<void> toggleFavorite() async {
-    await FavoritesService.toggleFavorite(widget.championId);
-
-    if (!mounted) return;
-    setState(() {
-      isFavorite = !isFavorite;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -136,12 +116,16 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          ChampionHeroBanner(
-            championId: widget.championId,
-            name: detail!.name,
-            title: detail!.title,
-            isFavorite: isFavorite,
-            onToggleFavorite: toggleFavorite,
+          ValueListenableBuilder<Set<String>>(
+            valueListenable: FavoritesService.favorites,
+            builder: (context, favorites, _) => ChampionHeroBanner(
+              championId: widget.championId,
+              name: detail!.name,
+              title: detail!.title,
+              isFavorite: favorites.contains(widget.championId),
+              onToggleFavorite: () =>
+                  FavoritesService.toggleFavorite(widget.championId),
+            ),
           ),
           SliverPadding(
             padding: const EdgeInsets.all(20),

@@ -7,54 +7,15 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import 'champion_card_favorite_badge.dart';
 
-class ChampionCard extends StatefulWidget {
+class ChampionCard extends StatelessWidget {
   final Champion champion;
-  final VoidCallback? onFavoriteChanged;
 
-  const ChampionCard({
-    super.key,
-    required this.champion,
-    this.onFavoriteChanged,
-  });
-
-  @override
-  State<ChampionCard> createState() => _ChampionCardState();
-}
-
-class _ChampionCardState extends State<ChampionCard> {
-  bool isFavorite = false;
-
-  @override
-  void initState() {
-    super.initState();
-    loadFavoriteStatus();
-  }
-
-  Future<void> loadFavoriteStatus() async {
-    final favorite = await FavoritesService.isFavorite(widget.champion.id);
-
-    // Une grille recycle ses cartes en permanence : celle-ci peut avoir été
-    // détruite avant que la lecture des favoris ne réponde.
-    if (!mounted) return;
-    setState(() {
-      isFavorite = favorite;
-    });
-  }
-
-  Future<void> toggleFavorite() async {
-    await FavoritesService.toggleFavorite(widget.champion.id);
-
-    if (!mounted) return;
-    setState(() {
-      isFavorite = !isFavorite;
-    });
-    widget.onFavoriteChanged?.call();
-  }
+  const ChampionCard({super.key, required this.champion});
 
   @override
   Widget build(BuildContext context) {
     final role =
-        widget.champion.tags.isNotEmpty ? widget.champion.tags.first : '';
+        champion.tags.isNotEmpty ? champion.tags.first : '';
 
     return GestureDetector(
       onTap: () {
@@ -62,7 +23,7 @@ class _ChampionCardState extends State<ChampionCard> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                ChampionDetailPage(championId: widget.champion.id),
+                ChampionDetailPage(championId: champion.id),
           ),
         );
       },
@@ -75,7 +36,7 @@ class _ChampionCardState extends State<ChampionCard> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(widget.champion.imageUrl, fit: BoxFit.cover),
+            Image.network(champion.imageUrl, fit: BoxFit.cover),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -89,9 +50,15 @@ class _ChampionCardState extends State<ChampionCard> {
                 ),
               ),
             ),
-            ChampionCardFavoriteBadge(
-              isFavorite: isFavorite,
-              onTap: toggleFavorite,
+            // Seul le badge se reconstruit quand les favoris changent, et il
+            // lit l'état partagé : le mettre en favori depuis la fiche du
+            // champion met cette carte à jour toute seule.
+            ValueListenableBuilder<Set<String>>(
+              valueListenable: FavoritesService.favorites,
+              builder: (context, favorites, _) => ChampionCardFavoriteBadge(
+                isFavorite: favorites.contains(champion.id),
+                onTap: () => FavoritesService.toggleFavorite(champion.id),
+              ),
             ),
             Positioned(
               left: 10,
@@ -102,7 +69,7 @@ class _ChampionCardState extends State<ChampionCard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    widget.champion.name,
+                    champion.name,
                     style: GoogleFonts.instrumentSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -111,7 +78,7 @@ class _ChampionCardState extends State<ChampionCard> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    widget.champion.title,
+                    champion.title,
                     style: AppTheme.serif(
                       size: 11.5,
                       italic: true,
