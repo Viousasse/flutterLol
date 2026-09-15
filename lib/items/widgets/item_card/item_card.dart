@@ -38,18 +38,14 @@ class ItemCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            // Le nom prend la place qui reste au lieu de la réclamer : sur un
-            // écran étroit, un nom sur deux lignes faisait déborder la carte.
-            Expanded(
-              child: Text(
-                item.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.instrumentSans(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
+            Text(
+              item.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
