@@ -160,12 +160,21 @@ class _FinalItemNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.check_circle_outline, size: 14, color: AppColors.textMuted),
+        const Icon(
+          Icons.check_circle_outline,
+          size: 14,
+          color: AppColors.textMuted,
+        ),
         const SizedBox(width: 7),
-        Text(
-          'Objet final, il ne se construit pas davantage.',
-          style: AppTheme.mono(size: 10, color: AppColors.textMuted),
+        // Sans Flexible, la phrase déborde la largeur de la fiche sur un
+        // téléphone au lieu de passer à la ligne.
+        Flexible(
+          child: Text(
+            'Objet final, il ne se construit pas davantage.',
+            style: AppTheme.mono(size: 10, color: AppColors.textMuted),
+          ),
         ),
       ],
     );
