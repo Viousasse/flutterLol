@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 
 import '../../../champions/models/champion.dart';
 
@@ -18,7 +19,7 @@ class QuizThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = Image.network(champion.imageUrl, fit: BoxFit.cover);
+    final image = RemoteImage(url: champion.imageUrl);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),

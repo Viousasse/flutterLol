@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../champions/models/champion.dart';
 import '../../../champion_detail/champion_detail_page.dart';
@@ -29,9 +30,9 @@ class ChampionHeroCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champion.id}_0.jpg',
-              fit: BoxFit.cover,
+            RemoteImage(
+              url:
+                  'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champion.id}_0.jpg',
             ),
             Container(
               decoration: BoxDecoration(

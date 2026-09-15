@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../constants/map_landmarks.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -44,12 +45,9 @@ class SummonersRiftMap extends StatelessWidget {
           child: GestureDetector(
             onTapDown: (details) => _reportTap(details, constraints),
             onTap: onClearSelection,
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return const _MapUnavailable();
-              },
+            child: RemoteImage(
+              url: imageUrl,
+              errorWidget: const _MapUnavailable(),
             ),
           ),
         ),

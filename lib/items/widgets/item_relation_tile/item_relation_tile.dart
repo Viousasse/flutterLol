@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../models/item_stack.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -36,24 +37,21 @@ class ItemRelationTile extends StatelessWidget {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(9),
-                        child: Image.network(
-                          item.imageUrl,
+                        child: RemoteImage(
+                          url: item.imageUrl,
                           width: 44,
                           height: 44,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 44,
-                              height: 44,
-                              alignment: Alignment.center,
-                              color: AppColors.background,
-                              child: const Icon(
-                                Icons.image_not_supported_outlined,
-                                size: 16,
-                                color: AppColors.textMuted,
-                              ),
-                            );
-                          },
+                          errorWidget: Container(
+                            width: 44,
+                            height: 44,
+                            alignment: Alignment.center,
+                            color: AppColors.background,
+                            child: const Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 16,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
                         ),
                       ),
                       if (!stack.isSingle)

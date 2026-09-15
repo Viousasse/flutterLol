@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../champions/widgets/champion_card/champion_card_favorite_badge.dart';
@@ -34,7 +35,7 @@ class ChampionHeroBanner extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(splashUrl, fit: BoxFit.cover),
+            RemoteImage(url: splashUrl),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

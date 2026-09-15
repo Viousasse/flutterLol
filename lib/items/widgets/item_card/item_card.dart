@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/item.dart';
 import '../../../theme/app_colors.dart';
@@ -27,13 +28,11 @@ class ItemCard extends StatelessWidget {
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  item.imageUrl,
+                child: RemoteImage(
+                  url: item.imageUrl,
                   width: 56,
                   height: 56,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const _MissingIcon(),
+                  errorWidget: const _MissingIcon(),
                 ),
               ),
             ),

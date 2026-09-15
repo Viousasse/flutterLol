@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../../recommendations/models/role_recommendation.dart';
 import '../../../runes/models/rune.dart';
 import '../../../runes/services/rune_service.dart';
@@ -92,14 +93,11 @@ class _RuneTreeHeader extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(6),
-          child: Image.network(
-            tree.iconUrl,
+          child: RemoteImage(
+            url: tree.iconUrl,
             width: 20,
             height: 20,
-            errorBuilder: (context, error, stackTrace) => const SizedBox(
-              width: 20,
-              height: 20,
-            ),
+            errorWidget: const SizedBox(width: 20, height: 20),
           ),
         ),
         const SizedBox(width: 8),
@@ -143,9 +141,9 @@ class _RuneChip extends StatelessWidget {
                 width: emphasize ? 1.5 : 1,
               ),
             ),
-            child: Image.network(
-              rune.iconUrl,
-              errorBuilder: (context, error, stackTrace) => const Icon(
+            child: RemoteImage(
+              url: rune.iconUrl,
+              errorWidget: const Icon(
                 Icons.circle_outlined,
                 size: 14,
                 color: AppColors.textMuted,

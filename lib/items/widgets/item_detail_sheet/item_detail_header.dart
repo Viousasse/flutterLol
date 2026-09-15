@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../models/item.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -24,24 +25,21 @@ class ItemDetailHeader extends StatelessWidget {
         ],
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Image.network(
-            item.imageUrl,
+          child: RemoteImage(
+            url: item.imageUrl,
             width: 54,
             height: 54,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: 54,
-                height: 54,
-                alignment: Alignment.center,
-                color: AppColors.background,
-                child: const Icon(
-                  Icons.image_not_supported_outlined,
-                  size: 18,
-                  color: AppColors.textMuted,
-                ),
-              );
-            },
+            errorWidget: Container(
+              width: 54,
+              height: 54,
+              alignment: Alignment.center,
+              color: AppColors.background,
+              child: const Icon(
+                Icons.image_not_supported_outlined,
+                size: 18,
+                color: AppColors.textMuted,
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 14),

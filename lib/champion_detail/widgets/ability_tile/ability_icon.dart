@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_colors.dart';
 
@@ -18,12 +19,7 @@ class AbilityIcon extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              imageUrl,
-              width: 44,
-              height: 44,
-              fit: BoxFit.cover,
-            ),
+            child: RemoteImage(url: imageUrl, width: 44, height: 44),
           ),
           Positioned(
             bottom: -4,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../models/champion.dart';
 import '../../services/favorites_service.dart';
 import '../../../champion_detail/champion_detail_page.dart';
@@ -36,7 +37,7 @@ class ChampionCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(champion.imageUrl, fit: BoxFit.cover),
+            RemoteImage(url: champion.imageUrl),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
