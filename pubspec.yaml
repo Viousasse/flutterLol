@@ -65,6 +65,10 @@ flutter:
     # d'en-tête CORS, donc la version web ne pourrait pas la charger, et l'URL
     # n'est pas documentée par Riot.
     - assets/images/runeterra_map.jpg
+    # Matchups calcules sur de vraies parties classees par
+    # tool/generate_matchups.dart (API Riot match-v5). Vide tant que le script
+    # n'a pas tourne : la fiche champion le dit alors clairement.
+    - assets/data/champion_matchups.json
 
   # Polices embarquées plutôt que téléchargées au premier lancement : le rendu
   # est correct hors ligne et ne dépend plus de fonts.google.com.

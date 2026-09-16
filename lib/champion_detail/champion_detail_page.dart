@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../champions/models/champion.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
 import '../champions/services/favorites_service.dart';
@@ -14,7 +16,10 @@ import '../shared/errors/user_message.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import 'widgets/ability_tile/ability_tile.dart';
 import 'widgets/champion_hero_banner/champion_hero_banner.dart';
+import 'widgets/matchup_section/matchup_section.dart';
 import 'widgets/rune_plan_section/rune_plan_section.dart';
+import '../matchups/models/matchup.dart';
+import '../matchups/services/matchup_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -36,10 +41,36 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
   List<Item> recommendedItems = const [];
   bool isLoadingRecommendation = true;
 
+  MatchupDataset matchups = const MatchupDataset.empty();
+  List<Champion> allChampions = const [];
+  bool isLoadingMatchups = true;
+
   @override
   void initState() {
     super.initState();
     loadDetail();
+    loadMatchups();
+  }
+
+  /// Les matchups viennent d'un fichier embarqué et de la liste des champions
+  /// déjà en cache : un échec masque simplement la section.
+  Future<void> loadMatchups() async {
+    try {
+      final loaded = await Future.wait([
+        MatchupService.load(),
+        ChampionService.fetchAll(),
+      ]);
+
+      if (!mounted) return;
+      setState(() {
+        matchups = loaded[0] as MatchupDataset;
+        allChampions = loaded[1] as List<Champion>;
+        isLoadingMatchups = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => isLoadingMatchups = false);
+    }
   }
 
   Future<void> loadDetail() async {
@@ -98,9 +129,7 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final failure = errorMessage;
@@ -164,6 +193,16 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
                         .map((item) => ItemStack(item: item, count: 1))
                         .toList(),
                     onSelect: (item) => ItemDetailSheet.show(context, item),
+                  ),
+                ],
+                if (!isLoadingMatchups) ...[
+                  const SizedBox(height: 28),
+                  Text('Matchups', style: AppTheme.serif(size: 20)),
+                  const SizedBox(height: 10),
+                  MatchupSection(
+                    championId: widget.championId,
+                    dataset: matchups,
+                    champions: allChampions,
                   ),
                 ],
               ]),
