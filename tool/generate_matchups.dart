@@ -22,6 +22,15 @@ const _output = 'assets/data/champion_matchups.json';
 const _soloQueue = 420;
 const _lanes = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY'];
 
+/// match-v5 n'ecrit pas toujours les noms comme Data Dragon ; l'app cherche les
+/// champions par identifiant Data Dragon, donc on aligne ici.
+const _nameAliases = {'FiddleSticks': 'Fiddlesticks'};
+
+String _championId(Map<String, dynamic> participant) {
+  final name = participant['championName'] as String;
+  return _nameAliases[name] ?? name;
+}
+
 Future<void> main(List<String> args) async {
   final apiKey = Platform.environment['RIOT_API_KEY'];
   if (apiKey == null || apiKey.isEmpty) {
@@ -51,7 +60,7 @@ Future<void> main(List<String> args) async {
     for (final puuid in puuids) {
       if (matchIds.length >= targetMatches) break;
       final ids = await riot.get(
-        'https://$region.api.riotgames.com/lol/match/v5/matches/by-puuid/$puuid/ids?queue=$_soloQueue&type=ranked&start=0&count=10',
+        'https://$region.api.riotgames.com/lol/match/v5/matches/by-puuid/$puuid/ids?queue=$_soloQueue&type=ranked&start=0&count=30',
       );
       matchIds.addAll((ids as List).cast<String>());
       stdout.write('\r${matchIds.length} identifiants de parties…   ');
@@ -109,7 +118,7 @@ bool _recordMatch(Map<String, dynamic> info, Map<String, _Tally> tally) {
 
     for (final me in inLane) {
       final other = inLane.firstWhere((p) => p != me);
-      final key = '${me['championName']}|${other['championName']}|$lane';
+      final key = '${_championId(me)}|${_championId(other)}|$lane';
       final entry = tally.putIfAbsent(key, _Tally.new);
       entry.games++;
       if (me['win'] == true) entry.wins++;
