@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:monapp/champions/models/champion.dart';
 import 'package:monapp/regions/constants/champion_regions.dart';
 import 'package:monapp/regions/constants/lore_regions.dart';
-import 'package:monapp/regions/models/lore_region.dart';
 import 'package:monapp/regions/widgets/region_marker/region_marker.dart';
 import 'package:monapp/regions/widgets/runeterra_map/runeterra_map.dart';
 
