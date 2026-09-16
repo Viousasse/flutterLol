@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../models/lore_region.dart';
 
-/// Les grandes régions de Runeterra, disposées à peu près comme sur la carte
-/// officielle du monde : le Freljord au nord, la Demacia à l'ouest, l'Ionie
-/// à l'est, le Shurima au sud.
+/// Fond de carte : l'image du monde de la carte interactive officielle,
+/// récupérée depuis map.leagueoflegends.com/assets/images/tiles/terrain_z1.jpg
+/// (niveau de zoom 1, 2048 × 2048) et embarquée dans l'app.
+const runeterraMapAsset = 'assets/images/runeterra_map.jpg';
+
+/// Les grandes régions de Runeterra, posées sur cette image.
 ///
-/// La disposition est volontairement schématique. Riot ne publie pas de carte
-/// du monde exploitable, et une image gravée dans l'app vieillirait mal.
+/// Les positions sont relevées à la main sur la carte officielle : Riot publie
+/// l'image mais aucune coordonnée. Une région sans territoire (Bandle, les
+/// champions sans attache) n'a pas de position et s'affiche sous la carte.
 const loreRegions = [
   LoreRegion(
     id: RegionId.runeterra,
@@ -26,8 +30,8 @@ const loreRegions = [
         "Trois tribus se disputent une terre de glace où survivre est déjà "
         "une victoire. La magie ancienne y dort sous le givre.",
     color: Color(0xFF7FC7E8),
-    x: 0.34,
-    y: 0.11,
+    x: 0.30,
+    y: 0.36,
   ),
   LoreRegion(
     id: RegionId.noxus,
@@ -37,8 +41,8 @@ const loreRegions = [
         "Un empire brutal mais méritocratique : peu importe d'où l'on vient, "
         "seule compte la force que l'on démontre.",
     color: Color(0xFFC0392B),
-    x: 0.50,
-    y: 0.26,
+    x: 0.52,
+    y: 0.44,
   ),
   LoreRegion(
     id: RegionId.demacia,
@@ -48,8 +52,8 @@ const loreRegions = [
         "Un royaume d'ordre et d'honneur, bâti sur la pierre qui étouffe la "
         "magie — et sur la peur de ceux qui la portent.",
     color: Color(0xFF6E9BD6),
-    x: 0.17,
-    y: 0.30,
+    x: 0.26,
+    y: 0.50,
   ),
   LoreRegion(
     id: RegionId.ionia,
@@ -59,8 +63,8 @@ const loreRegions = [
         "Des îles baignées de magie naturelle, longtemps en paix, que "
         "l'invasion noxienne a durablement fracturées.",
     color: Color(0xFFE98AB0),
-    x: 0.83,
-    y: 0.30,
+    x: 0.74,
+    y: 0.40,
   ),
   LoreRegion(
     id: RegionId.piltover,
@@ -70,8 +74,8 @@ const loreRegions = [
         "La ville du progrès et du commerce, où la hextech transforme la "
         "magie en machine — et la machine en fortune.",
     color: Color(0xFFD8A85B),
-    x: 0.29,
-    y: 0.47,
+    x: 0.59,
+    y: 0.545,
   ),
   LoreRegion(
     id: RegionId.zaun,
@@ -81,8 +85,8 @@ const loreRegions = [
         "Sous Piltover, une ville d'alchimie et de fumées où l'on invente "
         "sans permission et où l'on respire du poison.",
     color: Color(0xFF6FBF73),
-    x: 0.29,
-    y: 0.56,
+    x: 0.37,
+    y: 0.60,
   ),
   LoreRegion(
     id: RegionId.targon,
@@ -92,8 +96,8 @@ const loreRegions = [
         "Une montagne impossible que seuls les élus gravissent, pour y être "
         "investis par les Aspects venus des étoiles.",
     color: Color(0xFF9B7FD4),
-    x: 0.36,
-    y: 0.66,
+    x: 0.33,
+    y: 0.70,
   ),
   LoreRegion(
     id: RegionId.shurima,
@@ -103,8 +107,8 @@ const loreRegions = [
         "Un empire solaire englouti par le désert, revenu des sables avec "
         "ses dieux-empereurs et ses vieilles rancunes.",
     color: Color(0xFFE0B052),
-    x: 0.50,
-    y: 0.70,
+    x: 0.55,
+    y: 0.75,
   ),
   LoreRegion(
     id: RegionId.bilgewater,
@@ -114,8 +118,8 @@ const loreRegions = [
         "Un port sans loi vivant de la chasse aux monstres marins, où les "
         "dettes se règlent au couteau.",
     color: Color(0xFFD97D4A),
-    x: 0.70,
-    y: 0.58,
+    x: 0.81,
+    y: 0.54,
   ),
   LoreRegion(
     id: RegionId.shadowIsles,
@@ -125,8 +129,8 @@ const loreRegions = [
         "Un archipel maudit noyé sous la Brume noire, où la mort ne libère "
         "personne et où tout ce qui entre est retenu.",
     color: Color(0xFF4FBF9F),
-    x: 0.79,
-    y: 0.70,
+    x: 0.88,
+    y: 0.74,
   ),
   LoreRegion(
     id: RegionId.ixtal,
@@ -136,8 +140,8 @@ const loreRegions = [
         "Une nation retirée au cœur de la jungle, qui maîtrise les magies "
         "élémentaires et refuse de les partager.",
     color: Color(0xFF3FA88A),
-    x: 0.64,
-    y: 0.84,
+    x: 0.68,
+    y: 0.64,
   ),
   LoreRegion(
     id: RegionId.bandleCity,
@@ -147,8 +151,6 @@ const loreRegions = [
         "La patrie spirituelle des yordles, superposée au monde matériel : "
         "on n'y entre pas, on y est invité.",
     color: Color(0xFFC9A227),
-    x: 0.13,
-    y: 0.74,
   ),
   LoreRegion(
     id: RegionId.theVoid,
@@ -158,8 +160,8 @@ const loreRegions = [
         "Un vide affamé sous Runeterra, qui n'envoie pas des armées mais "
         "des appétits, et défait ce qu'il touche.",
     color: Color(0xFF8A5FBF),
-    x: 0.50,
-    y: 0.90,
+    x: 0.63,
+    y: 0.86,
   ),
   LoreRegion(
     id: RegionId.unknown,

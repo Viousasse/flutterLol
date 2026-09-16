@@ -59,6 +59,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    # Carte du monde de la carte interactive officielle (map.leagueoflegends.com,
+    # tuile terrain_z1, 2048 × 2048). Embarquée : le serveur ne renvoie pas
+    # d'en-tête CORS, donc la version web ne pourrait pas la charger, et l'URL
+    # n'est pas documentée par Riot.
+    - assets/images/runeterra_map.jpg
+
   # Polices embarquées plutôt que téléchargées au premier lancement : le rendu
   # est correct hors ligne et ne dépend plus de fonts.google.com.
   # Licences OFL des trois familles dans assets/fonts/.
