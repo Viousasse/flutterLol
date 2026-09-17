@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
@@ -21,7 +22,11 @@ class ErrorRetryView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off_outlined, size: 30, color: AppColors.textMuted),
+            const Icon(
+              Icons.cloud_off_outlined,
+              size: 30,
+              color: AppColors.textMuted,
+            ),
             const SizedBox(height: 14),
             Text(
               message,

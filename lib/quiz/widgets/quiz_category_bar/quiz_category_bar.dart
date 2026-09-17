@@ -16,27 +16,29 @@ class QuizCategoryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Un Wrap plutôt qu'une liste horizontale : les cinq puces ne tiennent pas
+    // sur une ligne à 375px, et il fallait alors faire défiler la barre pour
+    // atteindre la dernière — la puce choisie se retrouvait coupée au bord.
+    return Wrap(
+      spacing: 7,
+      runSpacing: 7,
+      children: [
+        _chip(label: 'Tout', category: null),
+        ...QuizCategory.values.map(
+          (category) =>
+              _chip(label: quizCategoryLabels[category]!, category: category),
+        ),
+      ],
+    );
+  }
+
+  Widget _chip({required String label, required QuizCategory? category}) {
     return SizedBox(
-      height: 34,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          AppFilterChip(
-            label: 'Tout',
-            selected: selected == null,
-            onTap: () => onSelect(null),
-          ),
-          ...QuizCategory.values.map((category) {
-            return Padding(
-              padding: const EdgeInsets.only(left: 7),
-              child: AppFilterChip(
-                label: quizCategoryLabels[category]!,
-                selected: selected == category,
-                onTap: () => onSelect(selected == category ? null : category),
-              ),
-            );
-          }),
-        ],
+      height: 32,
+      child: AppFilterChip(
+        label: label,
+        selected: selected == category,
+        onTap: () => onSelect(selected == category ? null : category),
       ),
     );
   }
