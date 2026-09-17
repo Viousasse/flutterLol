@@ -4,6 +4,7 @@ import '../theme/app_fonts.dart';
 import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
 import '../data_dragon/data_dragon_exception.dart';
+import '../roles/roles_page.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_colors.dart';
@@ -95,7 +96,13 @@ class _HomePageState extends State<HomePage> {
             const HomeGreeting(),
             ChampionHeroCard(champion: championOfTheDay!),
             const SizedBox(height: 26),
-            const _SectionTitle('Par rôle'),
+            _SectionTitle(
+              'Par rôle',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RolesPage()),
+              ),
+            ),
             const SizedBox(height: 11),
             RoleScroller(champions: champions),
             const SizedBox(height: 24),
@@ -127,21 +134,41 @@ class _HomePageState extends State<HomePage> {
 class _SectionTitle extends StatelessWidget {
   final String label;
 
-  const _SectionTitle(this.label);
+  /// Quand elle est fournie, le titre devient cliquable et une flèche l'indique.
+  final VoidCallback? onTap;
+
+  const _SectionTitle(this.label, {this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final title = Text(
+      label,
+      style: const TextStyle(
+        fontFamily: AppFonts.sans,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+      ),
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: AppFonts.sans,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-      ),
+      child: onTap == null
+          ? title
+          : GestureDetector(
+              onTap: onTap,
+              child: Row(
+                children: [
+                  title,
+                  const SizedBox(width: 5),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 16,
+                    color: AppColors.textMuted,
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

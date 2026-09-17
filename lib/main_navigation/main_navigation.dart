@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_fonts.dart';
 import '../home/home_page.dart';
 import '../champions/champions_page.dart';
-import '../roles/roles_page.dart';
+import '../quiz/quiz_page.dart';
 import '../items/items_page.dart';
 import '../map/map_page.dart';
 import '../theme/app_colors.dart';
@@ -24,7 +24,7 @@ class _MainNavigationState extends State<MainNavigation> {
   /// onglets que l'utilisateur n'a jamais visités.
   final Set<int> visitedTabs = {0};
 
-  final labels = const ['Accueil', 'Champions', 'Rôles', 'Objets', 'Carte'];
+  final labels = const ['Accueil', 'Champions', 'Quiz', 'Objets', 'Carte'];
 
   Widget _buildPage(int index) {
     if (!visitedTabs.contains(index)) return const SizedBox.shrink();
@@ -33,7 +33,7 @@ class _MainNavigationState extends State<MainNavigation> {
       case 1:
         return const ChampionsPage();
       case 2:
-        return const RolesPage();
+        return const QuizPage();
       case 3:
         return const ItemsPage();
       case 4:
