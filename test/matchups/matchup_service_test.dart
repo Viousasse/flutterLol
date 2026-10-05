@@ -72,4 +72,32 @@ void main() {
     });
     expect(parsed.matchups.single.winRate, closeTo(0.556, 0.001));
   });
+
+  test('additionne toutes les parties d un champion en bilan global', () {
+    final record = MatchupService.overallFor('Darius', dataset);
+
+    // Toutes les paires comptent, même celles trop rares pour être affichées.
+    expect(record.games, 20 + 12 + 15 + 3);
+    expect(record.wins, 6 + 4 + 11 + 0);
+    expect(record.isReliable, isFalse);
+  });
+
+  test('le bilan global n est fiable qu au-delà d un seuil de parties', () {
+    const big = OverallRecord(games: OverallRecord.minReliableGames, wins: 52);
+
+    expect(big.isReliable, isTrue);
+    expect(big.winRate, closeTo(0.52, 0.001));
+    expect(const OverallRecord.none().winRate, 0);
+  });
+
+  test('donne le bilan d un duel précis, ou rien s il est trop rare', () {
+    final duel = MatchupService.headToHead('Darius', 'Garen', dataset);
+    final rare = MatchupService.headToHead('Darius', 'Teemo', dataset);
+    final unknown = MatchupService.headToHead('Darius', 'Ahri', dataset);
+
+    expect(duel!.games, 20);
+    expect(duel.winRate, closeTo(0.3, 0.001));
+    expect(rare, isNull);
+    expect(unknown, isNull);
+  });
 }

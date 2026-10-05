@@ -5,6 +5,7 @@ import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
 import '../data_dragon/data_dragon_exception.dart';
 import '../roles/roles_page.dart';
+import '../search/search_page.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_colors.dart';
@@ -93,7 +94,12 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           padding: const EdgeInsets.only(bottom: 24),
           children: [
-            const HomeGreeting(),
+            HomeGreeting(
+              onSearch: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SearchPage()),
+              ),
+            ),
             ChampionHeroCard(champion: championOfTheDay!),
             const SizedBox(height: 26),
             _SectionTitle(

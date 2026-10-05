@@ -56,3 +56,20 @@ class MatchupDataset {
 
   bool get isEmpty => matchups.isEmpty;
 }
+
+/// Bilan global d'un champion, additionné sur tous ses adversaires.
+class OverallRecord {
+  /// Seuil à partir duquel un taux de victoire global veut dire quelque chose.
+  static const minReliableGames = 100;
+
+  final int games;
+  final int wins;
+
+  const OverallRecord({required this.games, required this.wins});
+
+  const OverallRecord.none() : this(games: 0, wins: 0);
+
+  double get winRate => games == 0 ? 0 : wins / games;
+
+  bool get isReliable => games >= minReliableGames;
+}

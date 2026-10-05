@@ -57,6 +57,52 @@ class MatchupService {
       ..sort((a, b) => b.winRate.compareTo(a.winRate));
   }
 
+  /// Bilan global de [championId] : toutes ses parties du fichier, quel que
+  /// soit l'adversaire, ce qui donne un taux de victoire bien plus stable que
+  /// chaque paire prise seule.
+  static OverallRecord overallFor(String championId, MatchupDataset dataset) {
+    var games = 0;
+    var wins = 0;
+
+    for (final matchup in dataset.matchups) {
+      if (matchup.championId != championId) continue;
+      games += matchup.games;
+      wins += matchup.wins;
+    }
+
+    return OverallRecord(games: games, wins: wins);
+  }
+
+  /// Le bilan face à un adversaire précis, toutes voies confondues, ou `null`
+  /// si les deux champions ne se sont jamais rencontrés assez souvent.
+  static Matchup? headToHead(
+    String championId,
+    String opponentId,
+    MatchupDataset dataset,
+  ) {
+    var games = 0;
+    var wins = 0;
+    String? lane;
+
+    for (final matchup in dataset.matchups) {
+      if (matchup.championId != championId) continue;
+      if (matchup.opponentId != opponentId) continue;
+      games += matchup.games;
+      wins += matchup.wins;
+      lane ??= matchup.lane;
+    }
+
+    if (games < minGames) return null;
+
+    return Matchup(
+      championId: championId,
+      opponentId: opponentId,
+      lane: lane ?? '',
+      games: games,
+      wins: wins,
+    );
+  }
+
   static List<Matchup> _significantFor(
     String championId,
     MatchupDataset dataset,

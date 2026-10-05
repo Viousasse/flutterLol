@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../champions/models/champion.dart';
+import '../compare/compare_page.dart';
+import '../shared/widgets/expandable_text/expandable_text.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
 import '../champions/services/favorites_service.dart';
@@ -162,14 +164,24 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
               delegate: SliverChildListDelegate([
                 Text('Histoire', style: AppTheme.serif(size: 20)),
                 const SizedBox(height: 10),
-                Text(
-                  detail!.lore,
+                ExpandableText(
+                  text: detail!.lore,
                   style: AppTheme.serif(
                     size: 14,
                     color: AppColors.textSecondary,
                   ).copyWith(height: 1.6),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 14),
+                _CompareLink(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ComparePage(initialChampionId: widget.championId),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
                 Text('Capacités', style: AppTheme.serif(size: 20)),
                 const SizedBox(height: 6),
                 AbilityTile(label: 'P', ability: detail!.passive),
@@ -209,6 +221,44 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CompareLink extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _CompareLink({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Comparer ce champion avec un autre',
+      excludeSemantics: true,
+      onTap: onTap,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            color: AppColors.accentSoft,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.compare_arrows, size: 15, color: AppColors.accent),
+              const SizedBox(width: 7),
+              Text(
+                'Comparer avec un autre champion',
+                style: AppTheme.mono(size: 11, color: AppColors.accent),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,0 +1,143 @@
+import 'package:flutter/material.dart';
+
+import '../../../champions/models/champion.dart';
+import '../../../shared/widgets/remote_image/remote_image.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_theme.dart';
+
+/// Feuille de choix d'un champion : une recherche et la liste complète.
+class ChampionPickerSheet extends StatefulWidget {
+  final List<Champion> champions;
+
+  /// Champion déjà placé de l'autre côté : le comparer à lui-même n'a pas de
+  /// sens, il n'est donc pas proposé.
+  final String? excludedId;
+
+  const ChampionPickerSheet({
+    super.key,
+    required this.champions,
+    this.excludedId,
+  });
+
+  static Future<Champion?> show(
+    BuildContext context, {
+    required List<Champion> champions,
+    String? excludedId,
+  }) {
+    return showModalBottomSheet<Champion>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) =>
+          ChampionPickerSheet(champions: champions, excludedId: excludedId),
+    );
+  }
+
+  @override
+  State<ChampionPickerSheet> createState() => _ChampionPickerSheetState();
+}
+
+class _ChampionPickerSheetState extends State<ChampionPickerSheet> {
+  String query = '';
+
+  List<Champion> get _matches {
+    final lowerCaseQuery = query.toLowerCase();
+
+    return widget.champions
+        .where(
+          (champion) =>
+              champion.id != widget.excludedId &&
+              champion.name.toLowerCase().contains(lowerCaseQuery),
+        )
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final matches = _matches;
+    final height = MediaQuery.sizeOf(context).height * 0.8;
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: SizedBox(
+        height: height,
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+              child: TextField(
+                autofocus: true,
+                onChanged: (value) => setState(() => query = value),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14.5,
+                ),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search, size: 18),
+                  hintText: 'Rechercher un champion',
+                  hintStyle: TextStyle(color: AppColors.textMuted),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+            Expanded(
+              child: matches.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Aucun champion ne correspond.',
+                        style: AppTheme.serif(
+                          size: 15,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: matches.length,
+                      itemBuilder: (context, index) {
+                        final champion = matches[index];
+
+                        return ListTile(
+                          onTap: () => Navigator.pop(context, champion),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: RemoteImage(
+                              url: champion.imageUrl,
+                              width: 40,
+                              height: 40,
+                            ),
+                          ),
+                          title: Text(
+                            champion.name,
+                            style: AppTheme.serif(size: 16),
+                          ),
+                          subtitle: Text(
+                            champion.title,
+                            style: AppTheme.serif(
+                              size: 12,
+                              italic: true,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

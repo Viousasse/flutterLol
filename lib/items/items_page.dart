@@ -9,6 +9,7 @@ import 'widgets/item_profile_bar/item_profile_bar.dart';
 import 'widgets/item_sort_button/item_sort_button.dart';
 import 'widgets/item_detail_sheet/item_detail_sheet.dart';
 import '../shared/errors/user_message.dart';
+import '../shared/text/search_text.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_theme.dart';
 
@@ -62,10 +63,12 @@ class _ItemsPageState extends State<ItemsPage> {
   }
 
   void applyFilters() {
-    final lowerCaseQuery = query.toLowerCase();
+    final normalizedQuery = normalizeSearchText(query);
 
     var list = allItems.where((item) {
-      final matchesQuery = item.name.toLowerCase().contains(lowerCaseQuery);
+      final matchesQuery = normalizeSearchText(
+        item.name,
+      ).contains(normalizedQuery);
       final matchesTier = selectedTier == null || item.tier == selectedTier;
       final matchesProfile =
           selectedProfile == null || item.profile == selectedProfile;

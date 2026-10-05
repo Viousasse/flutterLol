@@ -6,6 +6,10 @@ class Champion {
   final String imageUrl;
   final List<String> tags;
 
+  /// Difficulté de prise en main, de 1 à 10 selon Riot. 0 quand l'information
+  /// n'est pas fournie.
+  final int difficulty;
+
   Champion({
     required this.id,
     required this.name,
@@ -13,6 +17,7 @@ class Champion {
     required this.blurb,
     required this.imageUrl,
     required this.tags,
+    this.difficulty = 0,
   });
 
   /// Illustration verticale haute définition, faite pour les grandes cartes :
@@ -21,6 +26,8 @@ class Champion {
       'https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${id}_0.jpg';
 
   factory Champion.fromJson(Map<String, dynamic> json, String version) {
+    final info = json['info'] as Map<String, dynamic>?;
+
     return Champion(
       id: json['id'],
       name: json['name'],
@@ -29,6 +36,7 @@ class Champion {
       imageUrl:
           'https://ddragon.leagueoflegends.com/cdn/$version/img/champion/${json['image']['full']}',
       tags: List<String>.from(json['tags'] ?? []),
+      difficulty: (info?['difficulty'] as num?)?.toInt() ?? 0,
     );
   }
 }
