@@ -21,6 +21,9 @@ class RemoteImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
 
+  /// Partie de l'image conservée quand elle est rognée pour remplir son cadre.
+  final Alignment alignment;
+
   /// Affiché à la place de l'image si Riot ne la sert pas.
   final Widget? errorWidget;
 
@@ -30,6 +33,7 @@ class RemoteImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
+    this.alignment = Alignment.center,
     this.errorWidget,
   });
 
@@ -43,6 +47,7 @@ class RemoteImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
+        alignment: alignment,
         webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
         loadingBuilder: (context, child, progress) =>
             progress == null ? child : backdrop,
@@ -55,6 +60,7 @@ class RemoteImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
+      alignment: alignment,
       fadeInDuration: const Duration(milliseconds: 150),
       placeholder: (context, url) => backdrop,
       errorWidget: (context, url, error) => errorWidget ?? backdrop,

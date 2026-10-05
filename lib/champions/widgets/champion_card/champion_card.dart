@@ -36,7 +36,10 @@ class ChampionCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            RemoteImage(url: champion.imageUrl),
+            RemoteImage(
+              url: champion.portraitUrl,
+              alignment: Alignment.topCenter,
+            ),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

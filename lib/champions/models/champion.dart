@@ -15,6 +15,11 @@ class Champion {
     required this.tags,
   });
 
+  /// Illustration verticale haute définition, faite pour les grandes cartes :
+  /// l'icône carrée de 120 px devient floue dès qu'on l'étire.
+  String get portraitUrl =>
+      'https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${id}_0.jpg';
+
   factory Champion.fromJson(Map<String, dynamic> json, String version) {
     return Champion(
       id: json['id'],
