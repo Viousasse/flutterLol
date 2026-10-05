@@ -4,6 +4,8 @@ import '../theme/app_fonts.dart';
 import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
 import '../data_dragon/data_dragon_exception.dart';
+import '../data_dragon/data_dragon_service.dart';
+import '../patch_notes/models/patch_notes.dart';
 import '../roles/roles_page.dart';
 import '../search/search_page.dart';
 import '../shared/errors/user_message.dart';
@@ -12,6 +14,7 @@ import '../theme/app_colors.dart';
 import 'widgets/home_greeting/home_greeting.dart';
 import 'widgets/champion_hero_card/champion_hero_card.dart';
 import 'widgets/daily_quiz_card/daily_quiz_card.dart';
+import 'widgets/patch_notes_card/patch_notes_card.dart';
 import 'widgets/role_scroller/role_scroller.dart';
 import 'widgets/story_list/story_list.dart';
 import 'widgets/favorites_shortcut/favorites_shortcut.dart';
@@ -27,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   List<Champion> champions = [];
   Champion? championOfTheDay;
   List<Champion> storyPicks = [];
+  PatchNotes? patchNotes;
   bool isLoading = true;
   String? errorMessage;
 
@@ -34,6 +38,20 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadData();
+    loadPatchNotes();
+  }
+
+  /// La carte du patch est un bonus : sans la version du jeu, elle est
+  /// simplement absente et l'accueil reste complet.
+  Future<void> loadPatchNotes() async {
+    try {
+      final version = await DataDragonService.latestVersion();
+      final notes = PatchNotes.fromVersion(version);
+      if (!mounted) return;
+      setState(() => patchNotes = notes);
+    } catch (_) {
+      // Pas de carte de patch, rien d'autre à signaler à l'utilisateur.
+    }
   }
 
   Future<void> loadData() async {
@@ -101,6 +119,13 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             ChampionHeroCard(champion: championOfTheDay!),
+            if (patchNotes != null) ...[
+              const SizedBox(height: 14),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: PatchNotesCard(notes: patchNotes!),
+              ),
+            ],
             const SizedBox(height: 26),
             _SectionTitle(
               'Par rôle',
