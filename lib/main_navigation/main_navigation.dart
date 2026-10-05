@@ -6,6 +6,7 @@ import '../champions/champions_page.dart';
 import '../quiz/quiz_page.dart';
 import '../items/items_page.dart';
 import '../map/map_page.dart';
+import '../tools/tools_page.dart';
 import '../theme/app_colors.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -24,7 +25,14 @@ class _MainNavigationState extends State<MainNavigation> {
   /// onglets que l'utilisateur n'a jamais visités.
   final Set<int> visitedTabs = {0};
 
-  final labels = const ['Accueil', 'Champions', 'Quiz', 'Objets', 'Carte'];
+  final labels = const [
+    'Accueil',
+    'Champions',
+    'Quiz',
+    'Objets',
+    'Outils',
+    'Carte',
+  ];
 
   Widget _buildPage(int index) {
     if (!visitedTabs.contains(index)) return const SizedBox.shrink();
@@ -37,6 +45,8 @@ class _MainNavigationState extends State<MainNavigation> {
       case 3:
         return const ItemsPage();
       case 4:
+        return const ToolsPage();
+      case 5:
         return const MapPage();
       default:
         return const HomePage();
