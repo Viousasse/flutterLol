@@ -32,7 +32,13 @@ List<TeamMember> _team(
 List<Matchup> _overall(String prefix, int wins) {
   return [
     for (var role = 0; role < teamRoles.length; role++)
-      duel('$prefix$role', 'Dummy', lane: teamRoleLanes[role], games: 200, wins: wins),
+      duel(
+        '$prefix$role',
+        'Dummy',
+        lane: teamRoleLanes[role],
+        games: 200,
+        wins: wins,
+      ),
   ];
 }
 
@@ -40,7 +46,13 @@ List<Matchup> _overall(String prefix, int wins) {
 List<Matchup> _lanes(int games, int wins) {
   return [
     for (var role = 0; role < teamRoles.length; role++)
-      duel('b$role', 'r$role', lane: teamRoleLanes[role], games: games, wins: wins),
+      duel(
+        'b$role',
+        'r$role',
+        lane: teamRoleLanes[role],
+        games: games,
+        wins: wins,
+      ),
   ];
 }
 
@@ -58,17 +70,18 @@ void main() {
     final report = DraftEvaluator.evaluate(
       blue: strongBlue,
       red: weakRed,
-      dataset: dataset([..._overall('b', 112), ..._overall('r', 90), ..._lanes(30, 20)]),
+      dataset: dataset([
+        ..._overall('b', 112),
+        ..._overall('r', 90),
+        ..._lanes(30, 20),
+      ]),
     );
 
     expect(report.winner, DraftWinner.blue);
     expect(report.blueScore, 5);
     expect(report.redScore, 0);
     expect(report.verdict, contains('Votre draft est meilleure'));
-    expect(
-      report.criteria.every((c) => c.winner == DraftWinner.blue),
-      isTrue,
-    );
+    expect(report.criteria.every((c) => c.winner == DraftWinner.blue), isTrue);
   });
 
   test('le verdict nomme les critères qui font la différence', () {
@@ -83,24 +96,27 @@ void main() {
     expect(report.strengths, isNotEmpty);
   });
 
-  test('si le site gagne, le verdict le dit et les conseils visent le joueur', () {
-    final report = DraftEvaluator.evaluate(
-      blue: weakRed.map(_renamed('b')).toList(),
-      red: strongBlue.map(_renamed('r')).toList(),
-      dataset: dataset([..._lanes(30, 10)]),
-    );
+  test(
+    'si le site gagne, le verdict le dit et les conseils visent le joueur',
+    () {
+      final report = DraftEvaluator.evaluate(
+        blue: weakRed.map(_renamed('b')).toList(),
+        red: strongBlue.map(_renamed('r')).toList(),
+        dataset: dataset([..._lanes(30, 10)]),
+      );
 
-    expect(report.winner, DraftWinner.red);
-    expect(report.verdict, contains('La draft rouge est meilleure'));
-    expect(
-      report.improvements.any((line) => line.contains('dégâts magiques')),
-      isTrue,
-    );
-    expect(
-      report.improvements.any((line) => line.contains('première ligne')),
-      isTrue,
-    );
-  });
+      expect(report.winner, DraftWinner.red);
+      expect(report.verdict, contains('La draft rouge est meilleure'));
+      expect(
+        report.improvements.any((line) => line.contains('dégâts magiques')),
+        isTrue,
+      );
+      expect(
+        report.improvements.any((line) => line.contains('première ligne')),
+        isTrue,
+      );
+    },
+  );
 
   test('deux drafts identiques sont jugées équivalentes', () {
     final blue = _team('b', attack: 5, magic: 5, stunSpells: 2, tank: true);
@@ -183,7 +199,84 @@ void main() {
       dataset: dataset(_lanes(30, 20)),
     );
 
-    expect(report.improvements, ['Votre draft n\'a pas de point faible évident.']);
+    expect(report.improvements, [
+      'Votre draft n\'a pas de point faible évident.',
+    ]);
+  });
+
+  group('draft à deux', () {
+    const players = DraftPlayers(blue: 'Léa', red: 'Tom');
+    final data = dataset([
+      ..._overall('b', 112),
+      ..._overall('r', 90),
+      ..._lanes(30, 20),
+    ]);
+
+    DraftReport duelReport() => DraftEvaluator.evaluate(
+      blue: strongBlue,
+      red: weakRed,
+      dataset: data,
+      players: players,
+    );
+
+    test('nomme les joueurs au lieu de « vous » et du site', () {
+      final report = duelReport();
+
+      expect(report.players, players);
+      expect(report.verdict, contains('La draft de Léa est meilleure'));
+      expect(report.verdict, isNot(contains('Votre')));
+
+      final text = [
+        for (final criterion in report.criteria) criterion.explanation,
+      ].join(' ');
+      expect(text, contains('Léa'));
+      expect(text, contains('Tom'));
+      expect(text, isNot(contains('Vous')));
+      expect(text, isNot(contains('camp rouge')));
+    });
+
+    test('donne des conseils au perdant, pas seulement au camp bleu', () {
+      final report = duelReport();
+
+      expect(report.redImprovements.join(' '), contains('Tom'));
+      // Le rouge ne joue que du physique, sans tank ni contrôle.
+      expect(report.redImprovements.join(' '), contains('dégâts magiques'));
+      expect(report.redImprovements.join(' '), contains('première ligne'));
+      expect(report.redStrengths, isEmpty);
+    });
+
+    test('les points forts du bleu restent écrits de son point de vue', () {
+      final report = duelReport();
+
+      expect(report.strengths, isNotEmpty);
+      expect(report.redStrengths, isEmpty);
+    });
+
+    test('un duel inversé donne les mêmes avantages au rouge', () {
+      final report = DraftEvaluator.evaluate(
+        blue: weakRed,
+        red: strongBlue,
+        dataset: data,
+        players: players,
+      );
+
+      expect(report.winner, DraftWinner.red);
+      expect(report.verdict, contains('La draft de Tom est meilleure'));
+      expect(report.redStrengths, isNotEmpty);
+      expect(report.strengths, isEmpty);
+    });
+
+    test('contre le site, aucun conseil n\'est donné au camp rouge', () {
+      final report = DraftEvaluator.evaluate(
+        blue: strongBlue,
+        red: weakRed,
+        dataset: data,
+      );
+
+      expect(report.players, isNull);
+      expect(report.redImprovements, isEmpty);
+      expect(report.redStrengths, isEmpty);
+    });
   });
 }
 

@@ -29,8 +29,22 @@ class DraftCriterion {
   });
 }
 
+/// Les deux joueurs d'une draft à deux. Sans eux, le bilan s'adresse au joueur
+/// (camp bleu) et nomme l'adversaire « le site ».
+class DraftPlayers {
+  final String blue;
+  final String red;
+
+  const DraftPlayers({required this.blue, required this.red});
+
+  String of(DraftSide side) => side == DraftSide.blue ? blue : red;
+}
+
 /// Le bilan d'une draft terminée : qui gagne, pourquoi, et ce que le joueur
 /// (camp bleu) peut améliorer.
+///
+/// Dans une draft à deux ([players] renseigné), le bilan est neutre et les
+/// forces et conseils sont donnés pour chacun des deux camps.
 class DraftReport {
   final List<DraftCriterion> criteria;
   final double blueScore;
@@ -39,6 +53,9 @@ class DraftReport {
   final String verdict;
   final List<String> strengths;
   final List<String> improvements;
+  final DraftPlayers? players;
+  final List<String> redStrengths;
+  final List<String> redImprovements;
 
   const DraftReport({
     required this.criteria,
@@ -48,5 +65,8 @@ class DraftReport {
     required this.verdict,
     required this.strengths,
     required this.improvements,
+    this.players,
+    this.redStrengths = const [],
+    this.redImprovements = const [],
   });
 }

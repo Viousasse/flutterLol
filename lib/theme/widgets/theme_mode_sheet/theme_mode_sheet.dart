@@ -51,11 +51,9 @@ class ThemeModeSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+    return Material(
+      color: AppColors.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(8, 12, 8, 16),

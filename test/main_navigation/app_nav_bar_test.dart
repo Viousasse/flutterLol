@@ -57,11 +57,11 @@ void main() {
 
     expect(
       tester.getSemantics(find.bySemanticsLabel('Quiz')),
-      containsSemantics(isButton: true, isSelected: true),
+      isSemantics(isButton: true, isSelected: true),
     );
     expect(
       tester.getSemantics(find.bySemanticsLabel('Accueil')),
-      containsSemantics(isButton: true, isSelected: false),
+      isSemantics(isButton: true, isSelected: false),
     );
     handle.dispose();
   });

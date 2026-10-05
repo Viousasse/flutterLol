@@ -11,6 +11,7 @@ import '../team/constants/team_roles.dart';
 import '../team/models/team_member.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'models/draft_mode.dart';
 import 'models/draft_report.dart';
 import 'models/draft_state.dart';
 import 'services/draft_bot.dart';
@@ -22,10 +23,13 @@ import 'widgets/draft_slot/draft_slot.dart';
 /// d'un seul coup et on ne verrait pas qui choisit quoi.
 const _botThinkingDelay = Duration(milliseconds: 900);
 
-/// Entraîneur de draft : le joueur et le site choisissent à tour de rôle, puis
+/// Entraîneur de draft : le joueur et le site (ou un ami, en mode à deux)
+/// choisissent à tour de rôle, puis
 /// l'application compare les deux drafts et dit laquelle est meilleure.
 class DraftPage extends StatefulWidget {
-  const DraftPage({super.key});
+  final DraftMode mode;
+
+  const DraftPage({super.key, this.mode = DraftMode.vsSite});
 
   @override
   State<DraftPage> createState() => _DraftPageState();
@@ -103,7 +107,8 @@ class _DraftPageState extends State<DraftPage> {
   void advance() {
     if (state.isComplete) {
       analyse();
-    } else if (state.nextSide == DraftSide.red) {
+    } else if (widget.mode == DraftMode.vsSite &&
+        state.nextSide == DraftSide.red) {
       playBotTurn();
     }
   }
@@ -128,17 +133,17 @@ class _DraftPageState extends State<DraftPage> {
     advance();
   }
 
-  Future<void> pickForYou(int roleIndex) async {
+  Future<void> pickFor(DraftSide side, int roleIndex) async {
     final chosen = await ChampionPickerSheet.show(
       context,
       champions: champions,
       excludedIds: state.pickedIds,
     );
     if (chosen == null || !mounted) return;
-    if (state.nextSide != DraftSide.blue) return;
+    if (state.nextSide != side) return;
 
     setState(() {
-      state = state.pick(DraftSide.blue, roleIndex, chosen);
+      state = state.pick(side, roleIndex, chosen);
     });
     advance();
   }
@@ -163,6 +168,7 @@ class _DraftPageState extends State<DraftPage> {
           red: redMembers,
           dataset: dataset,
           championNames: {for (final c in champions) c.id: c.name},
+          players: widget.mode.players,
         );
         isAnalysing = false;
       });
@@ -191,7 +197,12 @@ class _DraftPageState extends State<DraftPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Entraîneur de draft', style: AppTheme.serif(size: 24)),
+        title: Text(
+          widget.mode == DraftMode.vsFriend
+              ? 'Draft à deux'
+              : 'Entraîneur de draft',
+          style: AppTheme.serif(size: 24),
+        ),
         actions: [
           if (!isLoading && state.pickCount > 0)
             IconButton(
@@ -222,6 +233,7 @@ class _DraftPageState extends State<DraftPage> {
       children: [
         _StatusCard(
           state: state,
+          players: widget.mode.players,
           isBotThinking: isBotThinking,
           isAnalysing: isAnalysing,
         ),
@@ -234,21 +246,33 @@ class _DraftPageState extends State<DraftPage> {
   }
 
   Widget _board() {
-    final yourTurn = state.nextSide == DraftSide.blue && !isBotThinking;
+    final friend = widget.mode == DraftMode.vsFriend;
+    final next = isBotThinking ? null : state.nextSide;
+    final players = widget.mode.players;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: _TeamColumn(
-            title: 'VOUS',
+            title: players == null ? 'VOUS' : '${players.blue} · BLEU',
             champions: state.blue,
-            onPick: yourTurn ? pickForYou : null,
+            onPick: next == DraftSide.blue
+                ? (role) => pickFor(DraftSide.blue, role)
+                : null,
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _TeamColumn(title: 'SITE', champions: state.red),
+          child: _TeamColumn(
+            title: players == null ? 'SITE' : '${players.red} · ROUGE',
+            champions: state.red,
+            // Contre le site, le rouge se joue tout seul ; à deux, il se joue
+            // au doigt.
+            onPick: friend && next == DraftSide.red
+                ? (role) => pickFor(DraftSide.red, role)
+                : null,
+          ),
         ),
       ],
     );
@@ -273,8 +297,11 @@ class _DraftPageState extends State<DraftPage> {
     if (finished == null) {
       return [
         Text(
-          'Choisissez un champion pour le rôle de votre choix quand c’est à '
-          'vous. Le site répond, puis la draft est comparée à la fin.',
+          widget.mode == DraftMode.vsFriend
+              ? 'Chacun choisit à son tour sur le même appareil, pour le rôle de '
+                    'son choix. À la fin, les deux drafts sont comparées.'
+              : 'Choisissez un champion pour le rôle de votre choix quand c’est à '
+                    'vous. Le site répond, puis la draft est comparée à la fin.',
           style: AppTheme.serif(size: 14, color: AppColors.textMuted),
         ),
       ];
@@ -328,11 +355,13 @@ class _TeamColumn extends StatelessWidget {
 
 class _StatusCard extends StatelessWidget {
   final DraftState state;
+  final DraftPlayers? players;
   final bool isBotThinking;
   final bool isAnalysing;
 
   const _StatusCard({
     required this.state,
+    required this.players,
     required this.isBotThinking,
     required this.isAnalysing,
   });
@@ -345,6 +374,15 @@ class _StatusCard extends StatelessWidget {
 
     final step = state.pickCount + 1;
     final count = draftPickOrder.length;
+
+    final duel = players;
+    if (duel != null) {
+      final name = duel.of(state.nextSide!);
+      final camp = state.nextSide == DraftSide.blue ? 'bleu' : 'rouge';
+
+      return 'Au tour de $name, camp $camp (choix $step sur $count). Passez '
+          "l'appareil si besoin, puis appuyez sur un rôle libre.";
+    }
 
     return 'À vous de choisir (choix $step sur $count). Appuyez sur un rôle '
         'libre.';

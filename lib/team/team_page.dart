@@ -4,6 +4,7 @@ import '../champions/models/champion.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
 import '../draft/draft_page.dart';
+import '../draft/models/draft_mode.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/widgets/action_link/action_link.dart';
 import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
@@ -17,7 +18,6 @@ import 'services/team_analyzer.dart';
 import 'widgets/damage_split_bar/damage_split_bar.dart';
 import 'widgets/insight_tile/insight_tile.dart';
 import 'widgets/team_slot/team_slot.dart';
-
 
 /// Compose une équipe de cinq champions et dit ce qui lui manque : dégâts
 /// physiques ou magiques, première ligne, contrôle.
@@ -72,9 +72,7 @@ class _TeamPageState extends State<TeamPage> {
     loadChampions();
   }
 
-  Set<String> get _teamIds => {
-    for (final champion in slots) ?champion?.id,
-  };
+  Set<String> get _teamIds => {for (final champion in slots) ?champion?.id};
 
   Future<void> pick(int index) async {
     final chosen = await ChampionPickerSheet.show(
@@ -101,9 +99,8 @@ class _TeamPageState extends State<TeamPage> {
       setState(() => details[championId] = detail);
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(userMessageFor(error))));
     } finally {
       if (mounted) setState(() => loadingIds.remove(championId));
     }
@@ -164,17 +161,32 @@ class _TeamPageState extends State<TeamPage> {
       children: [
         Padding(
           padding: const EdgeInsets.only(right: 8, bottom: 14),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: ActionLink(
-              icon: Icons.sports_esports_outlined,
-              label: 'Entraîneur de draft : jouer contre le site',
-              semanticLabel: 'Ouvrir l’entraîneur de draft contre le site',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DraftPage()),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ActionLink(
+                icon: Icons.sports_esports_outlined,
+                label: 'Entraîneur de draft : jouer contre le site',
+                semanticLabel: 'Ouvrir l’entraîneur de draft contre le site',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DraftPage()),
+                ),
               ),
-            ),
+              ActionLink(
+                icon: Icons.people_outline,
+                label: 'Draft à deux : jouer contre un ami',
+                semanticLabel: 'Ouvrir la draft à deux, contre un ami',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const DraftPage(mode: DraftMode.vsFriend),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         for (var index = 0; index < teamRoles.length; index++)

@@ -12,14 +12,36 @@ const _badColor = Color(0xFFD08A1E);
 /// couleur.
 class CriterionTile extends StatelessWidget {
   final DraftCriterion criterion;
+  final DraftPlayers? players;
 
-  const CriterionTile({super.key, required this.criterion});
+  const CriterionTile({super.key, required this.criterion, this.players});
 
   @override
   Widget build(BuildContext context) {
+    final duel = players;
     final (icon, color, label) = switch (criterion.winner) {
-      DraftWinner.blue => (Icons.check_circle_outline, _goodColor, 'Avantage à vous'),
-      DraftWinner.red => (Icons.warning_amber_rounded, _badColor, 'Avantage au site'),
+      // En duel, aucun camp n'est « le mauvais » : les deux avantages ont la
+      // même couleur.
+      DraftWinner.blue when duel != null => (
+        Icons.check_circle_outline,
+        _goodColor,
+        'Avantage à ${duel.blue}',
+      ),
+      DraftWinner.red when duel != null => (
+        Icons.check_circle_outline,
+        _goodColor,
+        'Avantage à ${duel.red}',
+      ),
+      DraftWinner.blue => (
+        Icons.check_circle_outline,
+        _goodColor,
+        'Avantage à vous',
+      ),
+      DraftWinner.red => (
+        Icons.warning_amber_rounded,
+        _badColor,
+        'Avantage au site',
+      ),
       DraftWinner.tie => (Icons.drag_handle, AppColors.textMuted, 'Égalité'),
     };
 
@@ -45,9 +67,9 @@ class CriterionTile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          _SideLine(side: 'VOUS', text: criterion.blueText),
+          _SideLine(side: duel?.blue ?? 'VOUS', text: criterion.blueText),
           const SizedBox(height: 4),
-          _SideLine(side: 'SITE', text: criterion.redText),
+          _SideLine(side: duel?.red ?? 'SITE', text: criterion.redText),
           const SizedBox(height: 10),
           Text(
             criterion.explanation,
@@ -71,9 +93,11 @@ class _SideLine extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 44,
+          width: 78,
           child: Text(
-            side,
+            side.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTheme.mono(size: 9, color: AppColors.textMuted),
           ),
         ),

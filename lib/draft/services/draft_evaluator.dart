@@ -7,6 +7,7 @@ import '../../team/models/team_insight.dart';
 import '../../team/models/team_member.dart';
 import '../../team/services/team_analyzer.dart';
 import '../models/draft_report.dart';
+import '../models/draft_state.dart';
 
 /// Compare deux drafts complètes et explique laquelle est meilleure.
 ///
@@ -34,17 +35,18 @@ class DraftEvaluator {
     required List<TeamMember> red,
     required MatchupDataset dataset,
     Map<String, String> championNames = const {},
+    DraftPlayers? players,
   }) {
     final blueAnalysis = TeamAnalyzer.analyze(blue);
     final redAnalysis = TeamAnalyzer.analyze(red);
     final lanes = _laneResults(blue, red, dataset);
 
     final criteria = [
-      _damageCriterion(blueAnalysis, redAnalysis),
-      _frontlineCriterion(blueAnalysis, redAnalysis),
-      _controlCriterion(blueAnalysis, redAnalysis),
-      _lanesCriterion(lanes),
-      _winRateCriterion(blue, red, dataset),
+      _damageCriterion(blueAnalysis, redAnalysis, players),
+      _frontlineCriterion(blueAnalysis, redAnalysis, players),
+      _controlCriterion(blueAnalysis, redAnalysis, players),
+      _lanesCriterion(lanes, players),
+      _winRateCriterion(blue, red, dataset, players),
     ];
 
     var blueScore = 0.0;
@@ -72,17 +74,48 @@ class DraftEvaluator {
       blueScore: blueScore,
       redScore: redScore,
       winner: winner,
-      verdict: _verdict(winner, blueScore, redScore, criteria),
-      strengths: _strengths(criteria),
+      verdict: _verdict(winner, blueScore, redScore, criteria, players),
+      strengths: _strengths(criteria, DraftSide.blue),
       improvements: _improvements(
-        blue: blue,
-        red: red,
-        blueAnalysis: blueAnalysis,
+        analysis: blueAnalysis,
         lanes: lanes,
         dataset: dataset,
         championNames: championNames,
+        taken: _taken(blue, red),
+        players: players,
+        side: DraftSide.blue,
       ),
+      players: players,
+      // Les conseils du camp rouge n'ont de sens que face à un vrai joueur :
+      // contre le site, personne ne les lirait.
+      redStrengths: players == null
+          ? const []
+          : _strengths(criteria, DraftSide.red),
+      redImprovements: players == null
+          ? const []
+          : _improvements(
+              analysis: redAnalysis,
+              lanes: lanes,
+              dataset: dataset,
+              championNames: championNames,
+              taken: _taken(blue, red),
+              players: players,
+              side: DraftSide.red,
+            ),
     );
+  }
+
+  static Set<String> _taken(List<TeamMember> blue, List<TeamMember> red) {
+    return {
+      for (final member in [...blue, ...red]) member.champion.id,
+    };
+  }
+
+  /// Le gagnant et le perdant d'un critère, nommés pour une phrase de duel.
+  static (String, String) _names(DraftPlayers players, DraftWinner winner) {
+    return winner == DraftWinner.blue
+        ? (players.blue, players.red)
+        : (players.red, players.blue);
   }
 
   // --- Critères ---------------------------------------------------------
@@ -97,7 +130,11 @@ class DraftEvaluator {
         '${_percent(analysis.magicShare)} % magiques';
   }
 
-  static DraftCriterion _damageCriterion(TeamAnalysis blue, TeamAnalysis red) {
+  static DraftCriterion _damageCriterion(
+    TeamAnalysis blue,
+    TeamAnalysis red,
+    DraftPlayers? players,
+  ) {
     final gap = _balance(blue) - _balance(red);
     final winner = gap.abs() < balanceTolerance
         ? DraftWinner.tie
@@ -108,6 +145,10 @@ class DraftEvaluator {
     final explanation = switch (winner) {
       DraftWinner.tie =>
         'Les deux drafts répartissent leurs dégâts de façon comparable.',
+      _ when players != null =>
+        '${_names(players, winner).$2} mise surtout sur un seul type de '
+            "dégâts : ${_names(players, winner).$1} n'a qu'à empiler une "
+            "seule défense pour l'annuler.",
       DraftWinner.blue =>
         "Le camp rouge mise presque tout sur un seul type de dégâts : vos "
             "adversaires n'ont qu'à empiler une seule défense pour l'annuler.",
@@ -128,6 +169,7 @@ class DraftEvaluator {
   static DraftCriterion _frontlineCriterion(
     TeamAnalysis blue,
     TeamAnalysis red,
+    DraftPlayers? players,
   ) {
     final winner = _higherWins(
       blue.frontlineCount.toDouble(),
@@ -137,6 +179,9 @@ class DraftEvaluator {
 
     final explanation = switch (winner) {
       DraftWinner.tie => 'Les deux équipes ont autant de première ligne.',
+      _ when players != null =>
+        '${_names(players, winner).$1} a une première ligne plus solide : ses '
+            'dégâts sont mieux protégés pendant les combats.',
       DraftWinner.blue =>
         'Votre première ligne est plus solide : vos dégâts sont mieux '
             'protégés pendant les combats.',
@@ -154,7 +199,11 @@ class DraftEvaluator {
     );
   }
 
-  static DraftCriterion _controlCriterion(TeamAnalysis blue, TeamAnalysis red) {
+  static DraftCriterion _controlCriterion(
+    TeamAnalysis blue,
+    TeamAnalysis red,
+    DraftPlayers? players,
+  ) {
     final winner = _higherWins(
       blue.controlSpellCount.toDouble(),
       red.controlSpellCount.toDouble(),
@@ -163,6 +212,9 @@ class DraftEvaluator {
 
     final explanation = switch (winner) {
       DraftWinner.tie => 'Les deux équipes ont un contrôle équivalent.',
+      _ when players != null =>
+        '${_names(players, winner).$1} a plus de sorts pour immobiliser ou '
+            'étourdir : bloquer une cible lui sera plus facile.',
       DraftWinner.blue =>
         'Vous avez plus de sorts pour immobiliser ou étourdir : il vous est '
             'plus facile de bloquer une cible.',
@@ -180,7 +232,10 @@ class DraftEvaluator {
     );
   }
 
-  static DraftCriterion _lanesCriterion(List<_LaneResult> lanes) {
+  static DraftCriterion _lanesCriterion(
+    List<_LaneResult> lanes,
+    DraftPlayers? players,
+  ) {
     final blueWins = lanes.where((l) => l.outcome == _Outcome.blue).length;
     final redWins = lanes.where((l) => l.outcome == _Outcome.red).length;
 
@@ -193,9 +248,12 @@ class DraftEvaluator {
     final detail = [for (final lane in lanes) lane.describe()].join('\n');
     final summary = switch (winner) {
       DraftWinner.tie => 'Les voies se répartissent équitablement.',
-      DraftWinner.blue => 'Vous gagnez plus de duels de voie que le camp rouge.',
-      DraftWinner.red =>
-        'Le camp rouge gagne plus de duels de voie que vous.',
+      _ when players != null =>
+        '${_names(players, winner).$1} gagne plus de duels de voie que '
+            '${_names(players, winner).$2}.',
+      DraftWinner.blue =>
+        'Vous gagnez plus de duels de voie que le camp rouge.',
+      DraftWinner.red => 'Le camp rouge gagne plus de duels de voie que vous.',
     };
 
     return DraftCriterion(
@@ -211,6 +269,7 @@ class DraftEvaluator {
     List<TeamMember> blue,
     List<TeamMember> red,
     MatchupDataset dataset,
+    DraftPlayers? players,
   ) {
     final blueRate = _averageWinRate(blue, dataset);
     final redRate = _averageWinRate(red, dataset);
@@ -229,7 +288,11 @@ class DraftEvaluator {
     final winner = _higherWins(blueRate, redRate, tolerance: winRateTolerance);
 
     final explanation = switch (winner) {
-      DraftWinner.tie => 'Les champions des deux camps gagnent à peu près autant.',
+      DraftWinner.tie =>
+        'Les champions des deux camps gagnent à peu près autant.',
+      _ when players != null =>
+        'Les champions de ${_names(players, winner).$1} gagnent plus souvent '
+            'en moyenne dans les parties classées Master+.',
       DraftWinner.blue =>
         'Vos champions gagnent plus souvent en moyenne dans les parties '
             'classées Master+.',
@@ -289,6 +352,7 @@ class DraftEvaluator {
     double blueScore,
     double redScore,
     List<DraftCriterion> criteria,
+    DraftPlayers? players,
   ) {
     final score = '${_score(blueScore)} contre ${_score(redScore)}';
 
@@ -296,7 +360,11 @@ class DraftEvaluator {
       return 'Les deux drafts se valent ($score).';
     }
 
-    final name = winner == DraftWinner.blue ? 'Votre draft' : 'La draft rouge';
+    final name = players != null
+        ? 'La draft de ${_names(players, winner).$1}'
+        : winner == DraftWinner.blue
+        ? 'Votre draft'
+        : 'La draft rouge';
     final reasons = [
       for (final criterion in criteria)
         if (criterion.winner == winner) criterion.title.toLowerCase(),
@@ -305,69 +373,89 @@ class DraftEvaluator {
     return '$name est meilleure ($score), grâce à : ${reasons.join(', ')}.';
   }
 
-  static List<String> _strengths(List<DraftCriterion> criteria) {
+  /// Les critères que [side] remporte, du point de vue de ce camp.
+  static List<String> _strengths(
+    List<DraftCriterion> criteria,
+    DraftSide side,
+  ) {
+    final winner = DraftWinner.of(side);
+
     return [
       for (final criterion in criteria)
-        if (criterion.winner == DraftWinner.blue)
-          '${criterion.title} : ${criterion.blueText} contre '
-              '${criterion.redText}.',
+        if (criterion.winner == winner)
+          side == DraftSide.blue
+              ? '${criterion.title} : ${criterion.blueText} contre '
+                    '${criterion.redText}.'
+              : '${criterion.title} : ${criterion.redText} contre '
+                    '${criterion.blueText}.',
     ];
   }
 
+  /// Ce que [side] peut améliorer. Sans [players], le conseil s'adresse au
+  /// joueur (camp bleu) à la deuxième personne ; en duel, il nomme le joueur.
   static List<String> _improvements({
-    required List<TeamMember> blue,
-    required List<TeamMember> red,
-    required TeamAnalysis blueAnalysis,
+    required TeamAnalysis analysis,
     required List<_LaneResult> lanes,
     required MatchupDataset dataset,
     required Map<String, String> championNames,
+    required Set<String> taken,
+    required DraftPlayers? players,
+    required DraftSide side,
   }) {
     final advice = <String>[];
+    final duel = players != null;
+    final name = duel ? players.of(side) : 'Vous';
+    final opponent = duel ? players.of(side.opposite) : 'le camp rouge';
+    final lacks = duel ? 'manque' : 'manquez';
 
-    if (blueAnalysis.magicShare < TeamAnalyzer.minDamageShare) {
+    if (analysis.magicShare < TeamAnalyzer.minDamageShare) {
       advice.add(
-        'Vous manquez de dégâts magiques (${_percent(blueAnalysis.magicShare)} '
+        '$name $lacks de dégâts magiques (${_percent(analysis.magicShare)} '
         '%) : prenez un mage ou un assassin à dégâts magiques, en milieu ou '
-        'en soutien, pour empêcher le camp rouge de n\'empiler que de '
-        "l'armure.",
+        "en soutien, pour empêcher $opponent de n'empiler que de l'armure.",
       );
-    } else if (blueAnalysis.physicalShare < TeamAnalyzer.minDamageShare) {
+    } else if (analysis.physicalShare < TeamAnalyzer.minDamageShare) {
       advice.add(
-        'Vous manquez de dégâts physiques '
-        '(${_percent(blueAnalysis.physicalShare)} %) : prenez un tireur ou un '
-        'combattant à dégâts physiques pour ne pas laisser le camp rouge '
+        '$name $lacks de dégâts physiques '
+        '(${_percent(analysis.physicalShare)} %) : prenez un tireur ou un '
+        'combattant à dégâts physiques pour ne pas laisser $opponent '
         'empiler la résistance magique.',
       );
     }
 
-    if (blueAnalysis.frontlineCount == 0) {
+    if (analysis.frontlineCount == 0) {
       advice.add(
-        "Votre équipe n'a aucune première ligne : un tank en haut, en jungle "
-        'ou en soutien protégerait vos dégâts.',
+        "${duel ? 'L\'équipe de $name' : 'Votre équipe'} n'a aucune première "
+        'ligne : un tank en haut, en jungle ou en soutien protégerait '
+        '${duel ? 'ses' : 'vos'} dégâts.',
       );
     }
 
-    if (blueAnalysis.controlSpellCount < TeamAnalyzer.minControlSpells) {
+    if (analysis.controlSpellCount < TeamAnalyzer.minControlSpells) {
       advice.add(
-        'Vous avez peu de contrôle (${blueAnalysis.controlSpellCount} sort'
-        '${blueAnalysis.controlSpellCount > 1 ? 's' : ''}) : cherchez des '
+        '$name ${duel ? 'a' : 'avez'} peu de contrôle '
+        '(${analysis.controlSpellCount} sort'
+        '${analysis.controlSpellCount > 1 ? 's' : ''}) : cherchez des '
         'champions qui étourdissent ou immobilisent, souvent en soutien ou en '
         'jungle.',
       );
     }
 
-    final taken = {
-      for (final member in [...blue, ...red]) member.champion.id,
-    };
-
+    // Les duels sont écrits du côté bleu : pour le rouge, on les retourne afin
+    // que « perdre » veuille toujours dire « perdre pour ce camp ».
     for (final lane in lanes) {
-      if (lane.outcome != _Outcome.red) continue;
+      final own = side == DraftSide.blue ? lane : lane.flipped();
+      if (own.outcome != _Outcome.red) continue;
 
-      advice.add(lane.suggestion(dataset, taken, championNames));
+      advice.add(own.suggestion(dataset, taken, championNames));
     }
 
     if (advice.isEmpty) {
-      advice.add("Votre draft n'a pas de point faible évident.");
+      advice.add(
+        duel
+            ? "La draft de $name n'a pas de point faible évident."
+            : "Votre draft n'a pas de point faible évident.",
+      );
     }
 
     return advice;
@@ -417,6 +505,20 @@ class _LaneResult {
     required this.blueWinRate,
   });
 
+  /// Le même duel vu du camp rouge : les champions s'échangent et le taux de
+  /// victoire devient celui du rouge.
+  _LaneResult flipped() {
+    final rate = blueWinRate;
+
+    return _LaneResult(
+      role: role,
+      lane: lane,
+      blue: red,
+      red: blue,
+      blueWinRate: rate == null ? null : 1 - rate,
+    );
+  }
+
   _Outcome get outcome {
     final rate = blueWinRate;
     if (rate == null) return _Outcome.unknown;
@@ -447,14 +549,17 @@ class _LaneResult {
     final base =
         '$role : ${blue.name} ne gagne que $rate % contre ${red.name}.';
 
-    final better = CounterService.counters(
-          red.id,
-          dataset,
-          lane: lane,
-          includeLowConfidence: false,
-        )
-        .where((pick) => !taken.contains(pick.championId) && pick.winRate > 0.5)
-        .firstOrNull;
+    final better =
+        CounterService.counters(
+              red.id,
+              dataset,
+              lane: lane,
+              includeLowConfidence: false,
+            )
+            .where(
+              (pick) => !taken.contains(pick.championId) && pick.winRate > 0.5,
+            )
+            .firstOrNull;
     if (better == null) return '$base Essayez un autre choix à ce poste.';
 
     final name = championNames[better.championId] ?? better.championId;
