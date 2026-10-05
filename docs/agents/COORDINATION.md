@@ -101,8 +101,8 @@ Phases : une tâche de phase 2 ne démarre qu'après les tâches listées en
 | T3  | 2 | Note « d'où viennent les données » partout | T1 | FAIT | tasks/T3.md |
 | T9b | 2 | Page de draft : conseils, session à deux | T4, T5, T9a, T10 | A FAIRE | tasks/T9b.md |
 | T13 | 2 | Import par code (builds, drafts) | T7, T10 | FAIT | tasks/T13.md |
-| T14 | 3 | Tests d'écran des pages contre-picks, points forts, builds | T1, T3, T13 | A FAIRE | tasks/T14.md |
-| T11 | 3 | Accessibilité : passage sur les écrans récents | T9b, T13 | A FAIRE | tasks/T11.md |
+| T14 | 3 | Tests d'écran des pages contre-picks, points forts, builds | T1, T3, T13 | FAIT | tasks/T14.md |
+| T11 | 3 | Accessibilité : passage sur les écrans récents | T9b, T13 | FAIT | tasks/T11.md |
 
 Non fait volontairement : **profil d'invocateur** (rang, parties récentes). Il
 exige un serveur pour ne pas embarquer la clé Riot dans l'application.
@@ -257,3 +257,16 @@ Les audits et analyses vont dans `docs/agents/reports/<sujet>.md`.
 - [T16 · début] Démarrage : pas de FriendScoreBar en rejeu.
 - [T16 · fin] FAIT. FriendScoreBar masquée en rejeu (condition _usesSession dans draft_page.dart), test/draft/draft_page_replay_score_test.dart (3 tests), 27 tests draft OK, analyze propre.
 - [T13 · fin] FAIT. DraftRecord.imported + DraftShareCode (assisted 'a', imported:true au décodage), stats/tuile/bilan, PasteCodeDialog (lib/shared/widgets/paste_code_dialog), build_import.dart (importBuildFromText), import dans BuildsPage (action AppBar 'Importer une build') et DraftHistoryPage (gagne loadChampions injectable). builds_page.dart LIBRE pour T14. Tests draft/builds/paste dialog verts.
+- [T14 · début] Démarrage : injection + tests d'écran contre-picks, points forts, builds, composition.
+- [T11 · début] Démarrage : accessibilité (audit + correctifs).
+- [T11 · fin] FAIT. Audit: docs/agents/reports/a11y-audit.md. Changements VISIBLES à vérifier: (1) AppFilterChip annonce bouton+état; zone tactile 44 px dans LaneFilterBar (runSpacing 7→0, pastille toujours 32 px, lignes un peu plus espacées par la zone) et dans la rangée de rôles de ChampionPickerSheet (padding vertical retiré, pastille 32 px). Les autres appelants (région, objets, carte, quiz, régions) gardent leur hauteur 30-34 px: leur passer AppFilterChip.minTapHeight si voulu. (2) Titres du bilan/SUGGESTIONS/Affichage en header sémantique (aucun changement visuel). Palette inchangée (contraste déjà >= 4,5:1, test/theme/contrast_test.dart). 219 tests shared/theme/draft/main_navigation OK, analyze propre.
+- [Architecte · 18:05] NOUVELLE MISSION : spécifications spec-kit rédigées après coup, dans `specs/NNN-nom/` (aucun fichier de `lib/` ni `test/` à toucher). Agents S1 (001-004), S2 (005-008), S3 (009-012), S4 (013-016), S5 (017-020). Consignes : `docs/agents/tasks/S-commun.md`. Chacun n'écrit que dans ses propres dossiers `specs/`. T11 et T14 (code) continuent en parallèle.
+- [S4 · fin partielle] RELAIS S4 → handoffs/S4-1.md (013 et 014 faits, 015 et 016 à faire).
+- [S2 · RELAIS] RELAIS S2 → handoffs/S2-1.md (005, 006, 007 faits ; 008 : spec et plan écrits, reste le reste).
+- [S3 · fin] FAIT. specs/009-grilles-adaptees-aux-ecrans-larges, 010-matchups-contre-picks-et-points-forts, 011-composition-d-equipe, 012-sorts-d-invocateur-et-onglet-outils : spec, plan, research, data-model (sauf 009), contracts, quickstart, tasks, checklists. Chemins vérifiés.
+- [T14 · fin] FAIT. Injection (loadChampions/loadDataset/loadItems/loadDetail/loadProfile, defauts inchanges) dans CountersPage, StrengthsPage, BuildsPage, TeamPage ; BuildStore.reset() ajoute. Tests : test/counters/counters_page_test.dart (+counter_pages_support.dart), test/strengths/strengths_page_test.dart, test/builds/builds_page_test.dart, test/team/team_page_test.dart. 110 tests des 4 dossiers OK, analyze propre. Note : dans ces pages, si le 2e chargeur echoue avant que le 1er finisse, l'erreur n'est pas observee (tests font echouer le 1er awaite).
+- [S5 · fin] FAIT. Dossiers specs/017 (historique, partage, import des drafts), 018 (filtre de rôle), 019 (outil matchups), 020 (accessibilité, Implemented). Écarts: 017 interface vouvoyée (principe VII), 018 RoleFilters dans team/ importé ailleurs + pas de test des seuils LaneProfile, 019 fichier embarqué sans champ patches + orchestration de l outil non testée, 020 puces à 30-34 px ailleurs et _ColumnTitle ~22 px.
+- [S1 · fin] FAIT. specs/001-images-nettes-et-accessibilite-de-base, 002-donnees-hors-ligne, 003-quiz-chrono-et-duels, 004-objets-favoris (spec, plan, research, data-model, contracts, quickstart, tasks, checklist). Écarts relevés : voir compte rendu.
+- [T17 · début] Démarrage : chargements parallèles (Future.wait).
+- [S2b · fin] FAIT. 008 complété (research, data-model, contracts x3, quickstart, tasks, checklist) ; vérification finale 005-008 : aucun texte modèle, chemins des tasks.md tous existants, 8 éléments par dossier.
+- [S4b · fin] FAIT. specs/015-entraineur-de-draft et specs/016-draft-a-deux écrits (8 éléments chacun, chemins vérifiés). Écarts relevés : vouvoiement au lieu du tutoiement (principe VII), deux couleurs en dur dans criterion_tile.dart (IV), friend_session_store importe un fichier de widget. S4 terminé (013 à 016).
