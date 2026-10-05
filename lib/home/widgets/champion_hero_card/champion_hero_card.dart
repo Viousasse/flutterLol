@@ -7,6 +7,11 @@ import '../../../champion_detail/champion_detail_page.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
+/// Le texte de la carte est posé sur une photo : il reste clair sur fond
+/// sombre dans les deux modes, sinon l'encre du mode clair disparaît dans
+/// l'image.
+final _onPhoto = AppPalette.dark;
+
 class ChampionHeroCard extends StatelessWidget {
   final Champion champion;
 
@@ -40,10 +45,11 @@ class ChampionHeroCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0.08, 0.62],
+                  stops: const [0.0, 0.35, 1.0],
                   colors: [
-                    AppColors.background.withValues(alpha: 0.95),
-                    AppColors.background.withValues(alpha: 0.15),
+                    _onPhoto.background.withValues(alpha: 0.55),
+                    _onPhoto.background.withValues(alpha: 0.05),
+                    _onPhoto.background.withValues(alpha: 0.92),
                   ],
                 ),
               ),
@@ -90,14 +96,17 @@ class _HeroCaption extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(champion.name, style: AppTheme.serif(size: 30)),
+        Text(
+          champion.name,
+          style: AppTheme.serif(size: 30, color: _onPhoto.textPrimary),
+        ),
         const SizedBox(height: 4),
         Text(
           champion.title,
           style: AppTheme.serif(
             size: 14,
             italic: true,
-            color: AppColors.textSecondary,
+            color: _onPhoto.textPrimary.withValues(alpha: 0.8),
           ),
         ),
         const SizedBox(height: 10),
@@ -107,12 +116,12 @@ class _HeroCaption extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: _onPhoto.background.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   champion.tags.first,
-                  style: AppTheme.mono(size: 9, color: AppColors.accent),
+                  style: AppTheme.mono(size: 9, color: _onPhoto.accent),
                 ),
               ),
             const SizedBox(width: 8),
@@ -121,7 +130,7 @@ class _HeroCaption extends StatelessWidget {
               style: TextStyle(
                 fontFamily: AppFonts.sans,
                 fontSize: 11.5,
-                color: AppColors.textSecondary,
+                color: _onPhoto.textPrimary.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w500,
               ),
             ),

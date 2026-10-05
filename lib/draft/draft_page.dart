@@ -18,6 +18,7 @@ import 'services/draft_bot.dart';
 import 'services/draft_evaluator.dart';
 import 'widgets/draft_report_view/draft_report_view.dart';
 import 'widgets/draft_slot/draft_slot.dart';
+import 'widgets/player_name_dialog/player_name_dialog.dart';
 
 /// Délai avant que le site joue son choix : sans lui, la draft se déroulerait
 /// d'un seul coup et on ne verrait pas qui choisit quoi.
@@ -39,6 +40,10 @@ class _DraftPageState extends State<DraftPage> {
   List<Champion> champions = const [];
   MatchupDataset dataset = const MatchupDataset.empty();
   DraftBot? bot;
+
+  /// Les joueurs d'un duel, ou `null` contre le site. Leurs noms se modifient
+  /// en touchant le titre de leur colonne.
+  late DraftPlayers? players = widget.mode.players;
 
   DraftState state = DraftState.empty();
   bool isLoading = true;
@@ -133,6 +138,24 @@ class _DraftPageState extends State<DraftPage> {
     advance();
   }
 
+  Future<void> rename(DraftSide side) async {
+    final current = players;
+    if (current == null) return;
+
+    final name = await PlayerNameDialog.show(
+      context,
+      currentName: current.of(side),
+      otherName: current.of(side.opposite),
+    );
+    if (name == null || !mounted) return;
+
+    setState(() {
+      players = side == DraftSide.blue
+          ? DraftPlayers(blue: name, red: current.red)
+          : DraftPlayers(blue: current.blue, red: name);
+    });
+  }
+
   Future<void> pickFor(DraftSide side, int roleIndex) async {
     final chosen = await ChampionPickerSheet.show(
       context,
@@ -168,7 +191,7 @@ class _DraftPageState extends State<DraftPage> {
           red: redMembers,
           dataset: dataset,
           championNames: {for (final c in champions) c.id: c.name},
-          players: widget.mode.players,
+          players: players,
         );
         isAnalysing = false;
       });
@@ -233,7 +256,7 @@ class _DraftPageState extends State<DraftPage> {
       children: [
         _StatusCard(
           state: state,
-          players: widget.mode.players,
+          players: players,
           isBotThinking: isBotThinking,
           isAnalysing: isAnalysing,
         ),
@@ -247,16 +270,19 @@ class _DraftPageState extends State<DraftPage> {
 
   Widget _board() {
     final friend = widget.mode == DraftMode.vsFriend;
+    final duel = players;
     final next = isBotThinking ? null : state.nextSide;
-    final players = widget.mode.players;
+    // Changer un nom après le bilan le rendrait faux : on le fige.
+    final canRename = friend && !state.isComplete;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: _TeamColumn(
-            title: players == null ? 'VOUS' : '${players.blue} · BLEU',
+            title: duel == null ? 'VOUS' : '${duel.blue} · BLEU',
             champions: state.blue,
+            onRename: canRename ? () => rename(DraftSide.blue) : null,
             onPick: next == DraftSide.blue
                 ? (role) => pickFor(DraftSide.blue, role)
                 : null,
@@ -265,10 +291,11 @@ class _DraftPageState extends State<DraftPage> {
         const SizedBox(width: 10),
         Expanded(
           child: _TeamColumn(
-            title: players == null ? 'SITE' : '${players.red} · ROUGE',
+            title: duel == null ? 'SITE' : '${duel.red} · ROUGE',
             champions: state.red,
             // Contre le site, le rouge se joue tout seul ; à deux, il se joue
             // au doigt.
+            onRename: canRename ? () => rename(DraftSide.red) : null,
             onPick: friend && next == DraftSide.red
                 ? (role) => pickFor(DraftSide.red, role)
                 : null,
@@ -323,11 +350,13 @@ class _TeamColumn extends StatelessWidget {
   final String title;
   final List<Champion?> champions;
   final ValueChanged<int>? onPick;
+  final VoidCallback? onRename;
 
   const _TeamColumn({
     required this.title,
     required this.champions,
     this.onPick,
+    this.onRename,
   });
 
   @override
@@ -335,13 +364,7 @@ class _TeamColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            title,
-            style: AppTheme.mono(size: 10, color: AppColors.accent),
-          ),
-        ),
+        _ColumnTitle(title: title, onRename: onRename),
         for (var index = 0; index < teamRoles.length; index++)
           DraftSlot(
             role: teamRoles[index],
@@ -416,6 +439,48 @@ class _StatusCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Le titre d'une colonne. Quand [onRename] est fourni, il se touche pour
+/// changer le nom du joueur, et un crayon le dit.
+class _ColumnTitle extends StatelessWidget {
+  final String title;
+  final VoidCallback? onRename;
+
+  const _ColumnTitle({required this.title, this.onRename});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = Text(
+      title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: AppTheme.mono(size: 10, color: AppColors.accent),
+    );
+    if (onRename == null) {
+      return Padding(padding: const EdgeInsets.only(bottom: 8), child: label);
+    }
+
+    return Semantics(
+      button: true,
+      label: 'Modifier le nom : $title',
+      excludeSemantics: true,
+      onTap: onRename,
+      child: InkWell(
+        onTap: onRename,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 8, top: 2),
+          child: Row(
+            children: [
+              Flexible(child: label),
+              const SizedBox(width: 4),
+              Icon(Icons.edit_outlined, size: 12, color: AppColors.accent),
+            ],
+          ),
+        ),
       ),
     );
   }
