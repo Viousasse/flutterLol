@@ -1,5 +1,6 @@
 import '../../items/models/item.dart';
 import '../models/build.dart';
+import 'build_share_code.dart';
 import 'build_stats.dart';
 
 /// Le résumé d'une build en texte brut, à coller dans un message.
@@ -21,6 +22,7 @@ class BuildShareText {
           '${index + 1}. ${items[index].name}',
         'Total : ${BuildStats.totalGold(items)} or',
       ],
+      'Code : ${BuildShareCode.encode(build)}',
     ].join('\n');
   }
 }

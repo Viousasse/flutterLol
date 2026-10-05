@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../champions/models/champion.dart';
@@ -5,10 +6,13 @@ import '../champions/services/champion_service.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/services/clipboard_copy/clipboard_copy.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
+import '../shared/widgets/paste_code_dialog/paste_code_dialog.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'draft_record_page.dart';
 import 'models/draft_record.dart';
 import 'services/draft_history_stats.dart';
+import 'services/draft_share_code.dart';
 import 'services/draft_history_store.dart';
 import 'services/draft_share_text.dart';
 import 'widgets/draft_history_tile/draft_history_tile.dart';
@@ -17,7 +21,13 @@ import 'widgets/draft_stats_card/draft_stats_card.dart';
 /// Les drafts déjà jouées, avec le bilan contre le site et les champions les
 /// plus choisis.
 class DraftHistoryPage extends StatefulWidget {
-  const DraftHistoryPage({super.key});
+  /// Chargeur de la liste des champions, remplaçable dans les tests.
+  final Future<List<Champion>> Function() loadChampions;
+
+  const DraftHistoryPage({
+    super.key,
+    this.loadChampions = ChampionService.fetchAll,
+  });
 
   @override
   State<DraftHistoryPage> createState() => _DraftHistoryPageState();
@@ -37,7 +47,7 @@ class _DraftHistoryPageState extends State<DraftHistoryPage> {
   Future<void> loadData() async {
     try {
       final storeRequest = DraftHistoryStore.ensureLoaded();
-      final champions = await ChampionService.fetchAll();
+      final champions = await widget.loadChampions();
       await storeRequest;
 
       if (!mounted) return;
@@ -118,12 +128,61 @@ class _DraftHistoryPageState extends State<DraftHistoryPage> {
     if (confirmed == true) await DraftHistoryStore.clear();
   }
 
+  /// Deux drafts sont la même quand elles ont les mêmes équipes, les mêmes
+  /// bannis et la même date : l'identifiant, lui, change à chaque import.
+  bool isAlreadySaved(DraftRecord record) {
+    return DraftHistoryStore.records.value.any(
+      (saved) =>
+          saved.playedAt == record.playedAt &&
+          listEquals(saved.blue, record.blue) &&
+          listEquals(saved.red, record.red) &&
+          listEquals(saved.blueBans, record.blueBans) &&
+          listEquals(saved.redBans, record.redBans),
+    );
+  }
+
+  Future<void> importDraft() async {
+    final record = await PasteCodeDialog.show<DraftRecord>(
+      context,
+      title: 'Importer une draft',
+      hint: 'Collez le code ou le message reçu (LOLD1...)',
+      parse: DraftShareCode.decode,
+      invalidMessage: 'Ce texte ne contient pas de code de draft valide.',
+    );
+    if (record == null || !mounted) return;
+
+    await DraftHistoryStore.ensureLoaded();
+    if (!mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context)..clearSnackBars();
+    if (isAlreadySaved(record)) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Cette draft est déjà dans votre historique.'),
+        ),
+      );
+
+      return;
+    }
+
+    // Le message n'attend pas l'écriture sur disque : la liste est déjà à
+    // jour, et l'écriture peut être lente.
+    final saving = DraftHistoryStore.add(record);
+    messenger.showSnackBar(const SnackBar(content: Text('Draft importée')));
+    await saving;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Historique des drafts', style: AppTheme.serif(size: 24)),
         actions: [
+          IconButton(
+            tooltip: 'Importer une draft',
+            onPressed: isLoading || errorMessage != null ? null : importDraft,
+            icon: const Icon(Icons.download_outlined),
+          ),
           ValueListenableBuilder<List<DraftRecord>>(
             valueListenable: DraftHistoryStore.records,
             builder: (context, records, _) => records.isEmpty
@@ -190,6 +249,12 @@ class _DraftHistoryPageState extends State<DraftHistoryPage> {
                 message: 'Résumé de la draft copié',
               ),
               onDelete: () => confirmDelete(record),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      DraftRecordPage(record: record, imageUrls: imageUrls),
+                ),
+              ),
             );
           },
         );

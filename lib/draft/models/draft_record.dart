@@ -31,6 +31,14 @@ class DraftRecord {
   final double redScore;
   final String verdict;
 
+  /// Vrai si le joueur a joué avec les conseils : une telle draft ne se compare
+  /// pas à une draft jouée seul, donc elle n'entre pas dans le taux de victoire.
+  final bool assisted;
+
+  /// Vrai pour une draft reçue par code : c'est la partie de quelqu'un d'autre,
+  /// donc « le joueur » n'est pas vous et elle ne compte pas dans votre taux.
+  final bool imported;
+
   const DraftRecord({
     required this.id,
     required this.playedAt,
@@ -46,6 +54,8 @@ class DraftRecord {
     required this.blueScore,
     required this.redScore,
     required this.verdict,
+    this.assisted = false,
+    this.imported = false,
   });
 
   /// Garde la draft [state] et son bilan [report].
@@ -57,6 +67,8 @@ class DraftRecord {
     required bool versusFriend,
     required String blueName,
     required String redName,
+    bool assisted = false,
+    bool imported = false,
   }) {
     List<String> ids(List<dynamic> champions) => [
       for (final champion in champions) champion?.id ?? '',
@@ -87,6 +99,8 @@ class DraftRecord {
       blueScore: report.blueScore,
       redScore: report.redScore,
       verdict: report.verdict,
+      assisted: assisted,
+      imported: imported,
     );
   }
 
@@ -107,6 +121,8 @@ class DraftRecord {
     'blueScore': blueScore,
     'redScore': redScore,
     'verdict': verdict,
+    'assisted': assisted,
+    'imported': imported,
   };
 
   /// Lit une draft enregistrée, ou renvoie `null` si l'entrée est illisible :
@@ -157,6 +173,8 @@ class DraftRecord {
       blueScore: (raw['blueScore'] as num?)?.toDouble() ?? 0,
       redScore: (raw['redScore'] as num?)?.toDouble() ?? 0,
       verdict: '${raw['verdict'] ?? ''}',
+      assisted: raw['assisted'] == true,
+      imported: raw['imported'] == true,
     );
   }
 }

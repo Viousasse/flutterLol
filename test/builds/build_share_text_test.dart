@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:monapp/builds/models/build.dart';
+import 'package:monapp/builds/services/build_share_code.dart';
 import 'package:monapp/builds/services/build_share_text.dart';
 import 'package:monapp/items/models/item.dart';
 import 'package:monapp/items/models/item_profile.dart';
@@ -33,7 +34,15 @@ void main() {
       '1. Lame',
       '2. Bâton',
       'Total : 3500 or',
+      'Code : ${BuildShareCode.encode(build)}',
     ]);
+  });
+
+  test('se termine par un code qui redonne la build', () {
+    final text = BuildShareText.of(build, [_item('1', 'Lame', 1000)], 'Ahri');
+
+    expect(text.split('\n').last, startsWith('Code : LOLB1.'));
+    expect(BuildShareCode.decode(text)?.itemIds, ['1', '2']);
   });
 
   test('sans champion, le titre ne le mentionne pas', () {

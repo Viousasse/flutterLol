@@ -10,13 +10,21 @@ import 'widgets/map_placeholder/map_placeholder.dart';
 import 'widgets/map_type_bar/map_type_bar.dart';
 import 'widgets/summoners_rift_map/summoners_rift_map.dart';
 import '../regions/runeterra_board.dart';
+import '../shared/errors/user_message.dart';
+import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../shared/widgets/app_filter_chip/app_filter_chip.dart';
 
 /// Les deux cartes de l'onglet : le terrain de jeu et le monde du lore.
 enum MapBoard { rift, runeterra }
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  /// Source de la version de Data Dragon ; injectable pour tester sans réseau.
+  final Future<String> Function() loadVersion;
+
+  const MapPage({
+    super.key,
+    this.loadVersion = DataDragonService.latestVersion,
+  });
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -25,7 +33,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   static const _summonersRiftMapId = '11';
 
-  late final Future<String> _version = DataDragonService.latestVersion();
+  late Future<String> _version = widget.loadVersion();
 
   MapBoard board = MapBoard.rift;
   LandmarkType? selectedType;
@@ -174,9 +182,21 @@ class _MapPageState extends State<MapPage> {
     ];
   }
 
+  /// Hors ligne, la version est introuvable : sans nouveau futur, l'utilisateur
+  /// devrait quitter la page pour retenter.
+  void _retryVersion() {
+    setState(() {
+      _version = widget.loadVersion();
+    });
+  }
+
   Widget _buildMap(BuildContext context, AsyncSnapshot<String> snapshot) {
-    if (snapshot.hasError) {
-      return const MapPlaceholder(message: 'Chargement impossible');
+    final error = snapshot.error;
+    if (error != null) {
+      return ErrorRetryView(
+        message: userMessageFor(error),
+        onRetry: _retryVersion,
+      );
     }
 
     final version = snapshot.data;

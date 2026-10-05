@@ -10,11 +10,14 @@ import '../matchups/services/matchup_service.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
 import '../shared/widgets/counter_tile/counter_tile.dart';
+import '../shared/widgets/data_source_note/data_source_note.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../shared/widgets/lane_filter_bar/lane_filter_bar.dart';
 import '../shared/widgets/remote_image/remote_image.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../matchups/services/lane_profile.dart';
+import '../team/services/role_filters.dart';
 
 /// « Je joue ce champion : contre qui est-il fort, et contre qui souffre-t-il ? »
 /// d'après les parties classées Master+ analysées.
@@ -88,6 +91,7 @@ class _StrengthsPageState extends State<StrengthsPage> {
       context,
       champions: champions,
       excludedIds: {?mine?.id},
+      roleFilter: RoleFilters.forProfile(LaneProfile.fromDataset(dataset)),
     );
     if (chosen == null || !mounted) return;
 
@@ -208,10 +212,11 @@ class _StrengthsPageState extends State<StrengthsPage> {
         ),
         const SizedBox(height: 10),
       ],
+      DataSourceNote(dataset: dataset),
+      const SizedBox(height: 4),
       Text(
-        'Parties classées Master+ du patch ${dataset.patch ?? '?'}, '
-        '${dataset.matches} parties analysées. Le pourcentage est celui de '
-        '${champion.name} face à chaque adversaire.',
+        'Le pourcentage est celui de ${champion.name} face à chaque '
+        'adversaire.',
         style: AppTheme.mono(size: 9, color: AppColors.textMuted),
       ),
     ];

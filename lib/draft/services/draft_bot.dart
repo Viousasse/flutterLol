@@ -6,7 +6,7 @@ import '../../matchups/services/matchup_service.dart';
 import '../../team/constants/team_roles.dart';
 import '../../team/services/team_analyzer.dart';
 import '../models/draft_state.dart';
-import 'lane_profile.dart';
+import '../../matchups/services/lane_profile.dart';
 
 /// Le choix du site : un rôle et le champion qui l'occupera.
 class DraftChoice {
@@ -155,38 +155,55 @@ class DraftBot {
       if (duel != null) score += (duel.winRate - 0.5) * counterWeight;
     }
 
-    return score + _needBonus(candidate, teammates);
+    return score + needBonusFor(candidate, teammates);
   }
 
-  /// Ce que le champion apporte à une équipe qui en manque.
-  double _needBonus(Champion candidate, Iterable<Champion> teammates) {
-    if (teammates.isEmpty) return 0;
-
-    final attack = teammates.fold(0, (sum, c) => sum + c.attackRating);
-    final magic = teammates.fold(0, (sum, c) => sum + c.magicRating);
-    final total = attack + magic;
+  /// Ce que le champion apporte à une équipe qui en manque : un bonus de
+  /// [needBonus] par manque comblé. Partagé avec le conseiller de draft.
+  static double needBonusFor(Champion candidate, Iterable<Champion> teammates) {
+    final filled = needsFilledBy(candidate, teammates);
     var bonus = 0.0;
-
-    if (total > 0) {
-      final magicShare = magic / total;
-      if (magicShare < TeamAnalyzer.minDamageShare + 0.1 &&
-          candidate.magicRating >= 6) {
-        bonus += needBonus;
-      }
-      if (1 - magicShare < TeamAnalyzer.minDamageShare + 0.1 &&
-          candidate.attackRating >= 6) {
-        bonus += needBonus;
-      }
-    }
-
-    if (!teammates.any(_isFrontliner) && _isFrontliner(candidate)) {
-      bonus += needBonus;
-    }
+    if (filled.magic) bonus += needBonus;
+    if (filled.physical) bonus += needBonus;
+    if (filled.frontline) bonus += needBonus;
 
     return bonus;
   }
 
-  static bool _isFrontliner(Champion champion) {
+  /// Les manques de [teammates] que [candidate] comble : dégâts magiques,
+  /// dégâts physiques, première ligne. Rien quand l'équipe est encore vide.
+  static ({bool magic, bool physical, bool frontline}) needsFilledBy(
+    Champion candidate,
+    Iterable<Champion> teammates,
+  ) {
+    if (teammates.isEmpty) {
+      return (magic: false, physical: false, frontline: false);
+    }
+
+    final attack = teammates.fold(0, (sum, c) => sum + c.attackRating);
+    final magic = teammates.fold(0, (sum, c) => sum + c.magicRating);
+    final total = attack + magic;
+    var fillsMagic = false;
+    var fillsPhysical = false;
+
+    if (total > 0) {
+      final magicShare = magic / total;
+      fillsMagic =
+          magicShare < TeamAnalyzer.minDamageShare + 0.1 &&
+          candidate.magicRating >= 6;
+      fillsPhysical =
+          1 - magicShare < TeamAnalyzer.minDamageShare + 0.1 &&
+          candidate.attackRating >= 6;
+    }
+
+    return (
+      magic: fillsMagic,
+      physical: fillsPhysical,
+      frontline: !teammates.any(isFrontliner) && isFrontliner(candidate),
+    );
+  }
+
+  static bool isFrontliner(Champion champion) {
     return champion.tags.contains('Tank') ||
         champion.defenseRating >= TeamAnalyzer.frontlineDefense;
   }

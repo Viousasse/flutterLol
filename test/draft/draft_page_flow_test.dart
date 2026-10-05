@@ -162,7 +162,7 @@ void main() {
   ) async {
     await _open(tester, DraftMode.vsSite);
 
-    await tester.tap(find.byType(Switch));
+    await tester.tap(find.byType(Switch).first);
     await _settle(tester);
 
     expect(find.textContaining('choix 1 sur 10'), findsOneWidget);
@@ -180,7 +180,7 @@ void main() {
     tester,
   ) async {
     await _open(tester, DraftMode.vsSite);
-    await tester.tap(find.byType(Switch));
+    await tester.tap(find.byType(Switch).first);
     await _settle(tester);
     await _playAllPicks(tester);
 
@@ -199,7 +199,7 @@ void main() {
     'une draft à deux se joue sans le site, nom des joueurs compris',
     (tester) async {
       await _open(tester, DraftMode.vsFriend);
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(Switch).first);
       await _settle(tester);
 
       expect(find.textContaining('Au tour de Joueur 1'), findsOneWidget);

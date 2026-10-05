@@ -16,6 +16,8 @@ import 'services/build_store.dart';
 import 'widgets/build_slot/build_slot.dart';
 import 'widgets/build_stats_panel/build_stats_panel.dart';
 import '../shared/widgets/item_picker_sheet/item_picker_sheet.dart';
+import '../matchups/services/lane_profile.dart';
+import '../team/services/role_filters.dart';
 
 const _defaultName = 'Ma build';
 const _slotColumns = 3;
@@ -48,8 +50,13 @@ class _BuildEditorPageState extends State<BuildEditorPage> {
 
   List<Item> allItems = const [];
   List<Champion> champions = const [];
+
+  /// Où chaque champion se joue, pour le filtre de rôle (absent s'il ne se
+  /// charge pas : la feuille n'a alors pas de puces).
+  LaneProfile? laneProfile;
   late final List<String?> slots = _initialSlots();
-  late String? championId = widget.build?.championId ?? widget.initialChampionId;
+  late String? championId =
+      widget.build?.championId ?? widget.initialChampionId;
 
   bool isLoading = true;
   String? errorMessage;
@@ -77,6 +84,11 @@ class _BuildEditorPageState extends State<BuildEditorPage> {
   }
 
   Future<void> loadData() async {
+    RoleFilters.loadProfile().then((profile) {
+      if (!mounted) return;
+      setState(() => laneProfile = profile);
+    });
+
     try {
       final itemsRequest = ItemService.fetchAll();
       final championsRequest = ChampionService.fetchAll();
@@ -119,9 +131,7 @@ class _BuildEditorPageState extends State<BuildEditorPage> {
   }
 
   List<Item> get _chosenItems {
-    return [
-      for (var index = 0; index < slots.length; index++) ?_itemAt(index),
-    ];
+    return [for (var index = 0; index < slots.length; index++) ?_itemAt(index)];
   }
 
   Champion? get _champion {
@@ -143,6 +153,7 @@ class _BuildEditorPageState extends State<BuildEditorPage> {
     final champion = await ChampionPickerSheet.show(
       context,
       champions: champions,
+      roleFilter: RoleFilters.forProfile(laneProfile),
     );
     if (champion == null || !mounted) return;
 

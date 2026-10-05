@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../champions/models/champion.dart';
 import '../../../matchups/models/matchup.dart';
 import '../../../matchups/services/matchup_service.dart';
+import '../../../shared/widgets/data_source_note/data_source_note.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
@@ -46,6 +47,8 @@ class HeadToHeadCard extends StatelessWidget {
           _OverallLine(champion: left, record: leftRecord),
           const SizedBox(height: 4),
           _OverallLine(champion: right, record: rightRecord),
+          const SizedBox(height: 10),
+          DataSourceNote(dataset: dataset),
         ],
       ),
     );

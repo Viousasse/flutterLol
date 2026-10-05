@@ -22,6 +22,8 @@ DraftRecord _record({
   List<String> redBans = const [],
   String verdict = 'Verdict.',
   DateTime? playedAt,
+  bool assisted = false,
+  bool imported = false,
 }) {
   final blueIds = blue ?? [for (var i = 0; i < teamRoles.length; i++) 'B$i'];
   final redIds = red ?? [for (var i = 0; i < teamRoles.length; i++) 'R$i'];
@@ -44,6 +46,8 @@ DraftRecord _record({
     blueScore: 3.5,
     redScore: 1.5,
     verdict: verdict,
+    assisted: assisted,
+    imported: imported,
   );
 }
 
@@ -71,6 +75,21 @@ void main() {
       expect(copy.nameOf('B0'), 'Nom B0');
       expect(copy.winner, DraftWinner.blue);
       expect(copy.blueScore, 3.5);
+    });
+
+    test('garde le marquage « avec aide » et le relit', () {
+      final copy = DraftRecord.tryFromJson(
+        jsonDecode(jsonEncode(_record(assisted: true).toJson())),
+      )!;
+
+      expect(copy.assisted, isTrue);
+    });
+
+    test('une ancienne draft sans marquage se relit comme jouée seul', () {
+      final old = _record(assisted: true).toJson()..remove('assisted');
+
+      expect(DraftRecord.tryFromJson(old)!.assisted, isFalse);
+      expect(_record().assisted, isFalse);
     });
 
     test('une entrée illisible est écartée au lieu de planter', () {
@@ -123,6 +142,19 @@ void main() {
       expect(record.nameOf('Ban0'), 'Ban0');
       expect(record.winner, DraftWinner.blue);
       expect(record.verdict, 'Bleu gagne.');
+      expect(record.assisted, isFalse);
+
+      final assisted = DraftRecord.from(
+        id: 'z',
+        playedAt: DateTime(2026, 1, 1),
+        state: state,
+        report: report,
+        versusFriend: false,
+        blueName: 'Vous',
+        redName: 'Le site',
+        assisted: true,
+      );
+      expect(assisted.assisted, isTrue);
     });
   });
 
@@ -191,6 +223,24 @@ void main() {
       expect(stats.losses, 1);
       expect(stats.ties, 1);
       expect(stats.winRate, 0.5);
+    });
+
+    test('les drafts avec aide sortent du taux mais restent comptées', () {
+      final stats = DraftHistoryStats.of([
+        _record(id: '1', winner: DraftWinner.blue),
+        _record(id: '2', winner: DraftWinner.blue, assisted: true),
+        _record(id: '3', winner: DraftWinner.red, assisted: true),
+        _record(id: '4', versusFriend: true, assisted: true),
+      ]);
+
+      expect(stats.total, 4);
+      expect(stats.assistedCount, 3);
+      expect(stats.againstSite, 1);
+      expect(stats.wins, 1);
+      expect(stats.losses, 0);
+      expect(stats.winRate, 1);
+      // Les champions les plus choisis comptent toutes les drafts.
+      expect(stats.mostPicked.first.count, 4);
     });
 
     test('une draft à deux compte dans le total mais pas dans le taux', () {
@@ -273,6 +323,12 @@ void main() {
       expect(text, contains('La draft de Léa est meilleure.'));
     });
 
+    test('se termine par la ligne « Code : LOLD1… »', () {
+      final text = DraftShareText.of(_record());
+
+      expect(text.split('\n').last, startsWith('Code : LOLD1.'));
+    });
+
     test('n écrit pas de ligne « Bannis » sans bannissements', () {
       expect(DraftShareText.of(_record()), isNot(contains('Bannis')));
     });
@@ -287,6 +343,33 @@ void main() {
       final text = DraftShareText.of(_record(blue: ['Ahri', '', '', '', '']));
 
       expect(text, contains('${teamRoles[1]} : —'));
+    });
+  });
+
+  group('drafts importées', () {
+    test('se relisent avec leur étiquette, absente = non importée', () {
+      final json = _record(imported: true).toJson();
+
+      expect(DraftRecord.tryFromJson(json)!.imported, isTrue);
+      expect(
+        DraftRecord.tryFromJson(json..remove('imported'))!.imported,
+        false,
+      );
+    });
+
+    test('comptent dans le total et les champions, pas dans le taux', () {
+      final stats = DraftHistoryStats.of([
+        _record(id: '1', winner: DraftWinner.blue),
+        _record(id: '2', winner: DraftWinner.red, imported: true),
+        _record(id: '3', versusFriend: true, imported: true),
+      ]);
+
+      expect(stats.total, 3);
+      expect(stats.importedCount, 2);
+      expect(stats.againstSite, 1);
+      expect(stats.wins, 1);
+      expect(stats.losses, 0);
+      expect(stats.mostPicked.first.count, 3);
     });
   });
 }

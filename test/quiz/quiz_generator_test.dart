@@ -91,15 +91,23 @@ void main() {
 
         expect(question, isNotNull, reason: 'famille $category, tirage $i');
         expect(question!.category, category);
-        expect(question.options, hasLength(QuizGenerator.optionCount));
-        expect(question.answerIndex, inInclusiveRange(0, 3));
+        // Les duels posent parfois un face-à-face à deux propositions.
+        if (category == QuizCategory.matchups) {
+          expect(question.options.length, inInclusiveRange(2, 4));
+        } else {
+          expect(question.options, hasLength(QuizGenerator.optionCount));
+        }
+        expect(
+          question.answerIndex,
+          inInclusiveRange(0, question.options.length - 1),
+        );
         expect(question.prompt.trim(), isNotEmpty);
 
         // Une proposition en double rendrait la question insoluble.
         final labels = question.options.map((o) => o.label).toSet();
         expect(
           labels,
-          hasLength(QuizGenerator.optionCount),
+          hasLength(question.options.length),
           reason: question.prompt,
         );
       }
@@ -116,6 +124,9 @@ void main() {
       final answer = question!.answer.label.toLowerCase();
       // Le prix est du chiffre : « 800 po » peut légitimement figurer ailleurs.
       if (answer.endsWith(' po')) continue;
+      // « A ou B ? » cite forcément les deux : la réponse est l'un d'eux.
+      final names = question.options.map((o) => o.label.toLowerCase());
+      if (names.every(question.prompt.toLowerCase().contains)) continue;
 
       expect(
         question.prompt.toLowerCase(),

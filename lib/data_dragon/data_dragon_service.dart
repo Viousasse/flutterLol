@@ -28,14 +28,21 @@ class DataDragonService {
     return request;
   }
 
+  /// Forme commune des fichiers Data Dragon : un objet dont la clé `data`
+  /// porte le contenu. Sert de [isValid] aux services.
+  static bool hasDataMap(dynamic decoded) =>
+      decoded is Map && decoded['data'] is Map;
+
+  static bool _isVersionList(dynamic decoded) =>
+      decoded is List && decoded.isNotEmpty && decoded.first is String;
+
   static Future<String> _fetchLatestVersion() async {
     try {
-      final versions =
-          await fetchJson(
-                '$_baseUrl/api/versions.json',
-                offlineKey: 'versions',
-              )
-              as List;
+      final versions = await fetchJson(
+        '$_baseUrl/api/versions.json',
+        offlineKey: 'versions',
+        isValid: _isVersionList,
+      ) as List;
       if (versions.isEmpty) {
         throw const DataDragonException('Aucune version de jeu publiée.');
       }
@@ -57,28 +64,58 @@ class DataDragonService {
   /// Avec un [offlineKey], le dernier document reçu est gardé sur l'appareil et
   /// resservi quand Riot est injoignable : l'application s'ouvre alors sans
   /// connexion, avec les données du dernier lancement réussi.
-  static Future<dynamic> fetchJson(String url, {String? offlineKey}) async {
+  ///
+  /// [isValid] vérifie la forme du document décodé. Un CDN ou un portail
+  /// captif peut répondre 200 avec un JSON qui n'est pas le bon : sans ce
+  /// contrôle, il écraserait la bonne copie et l'application casserait aussi
+  /// hors ligne. Un document refusé est traité comme une panne.
+  ///
+  /// [offlineKeepLast] borne le nombre de copies d'une même famille de clés
+  /// (`famille:nom`, ex. `champion:Ahri`) : les plus anciennes sont effacées,
+  /// pour ne pas saturer le stockage avec un fichier par champion consulté.
+  static Future<dynamic> fetchJson(
+    String url, {
+    String? offlineKey,
+    bool Function(dynamic decoded)? isValid,
+    int? offlineKeepLast,
+  }) async {
     try {
       final body = await _download(url);
       final decoded = _decode(body);
 
+      if (isValid != null && !isValid(decoded)) {
+        throw const DataDragonException(
+          'Réponse inattendue du serveur de Riot.',
+        );
+      }
+
       // La copie n'est écrite qu'une fois le document décodé : un corps
       // illisible ne doit pas écraser la dernière bonne version.
-      if (offlineKey != null) await OfflineJsonCache.write(offlineKey, body);
+      if (offlineKey != null) {
+        await OfflineJsonCache.write(
+          offlineKey,
+          body,
+          keepLast: offlineKeepLast,
+        );
+      }
 
       return decoded;
-    } on DataDragonException {
+    } on DataDragonException catch (failure) {
       if (offlineKey == null) rethrow;
 
       final saved = await OfflineJsonCache.read(offlineKey);
       if (saved == null) rethrow;
 
+      final Object? restored;
       try {
-        return jsonDecode(saved);
+        restored = jsonDecode(saved);
       } on FormatException {
         // Copie corrompue : on remonte la vraie panne réseau, pas celle-ci.
-        rethrow;
+        throw failure;
       }
+      if (isValid != null && !isValid(restored)) rethrow;
+
+      return restored;
     }
   }
 

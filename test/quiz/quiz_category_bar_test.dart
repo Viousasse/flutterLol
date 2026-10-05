@@ -50,8 +50,27 @@ void main() {
     await _pumpBar(tester, width: 375);
 
     final court = tester.getRect(find.text('Tout')).width;
-    final long = tester.getRect(find.text('Matchups')).width;
+    final long = tester.getRect(find.text('Champions')).width;
 
     expect(court, lessThan(long));
+  });
+
+  testWidgets('une famille indisponible est masquée', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: QuizCategoryBar(
+            selected: null,
+            onSelect: (_) {},
+            available: const {QuizCategory.champions, QuizCategory.items},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Champions'), findsOneWidget);
+    expect(find.text('Objets'), findsOneWidget);
+    expect(find.text('Duels'), findsNothing);
+    expect(find.text('Régions'), findsNothing);
   });
 }

@@ -19,6 +19,8 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  _extraTests();
+
   test('resert la derniere copie quand Riot est injoignable', () async {
     await _withServer(
       (_) async => http.Response('{"data":{"Ahri":1}}', 200),
@@ -75,5 +77,84 @@ void main() {
     );
 
     expect(replay, {'data': 1});
+  });
+}
+
+void _extraTests() {
+  test('un JSON de mauvaise forme n ecrase pas la bonne copie', () async {
+    await _withServer(
+      (_) async => http.Response('{"data":{"Ahri":1}}', 200),
+      () => DataDragonService.fetchJson(
+        _url,
+        offlineKey: 'champions',
+        isValid: DataDragonService.hasDataMap,
+      ),
+    );
+
+    final wrong = await _withServer(
+      (_) async => http.Response('{"error":"maintenance"}', 200),
+      () => DataDragonService.fetchJson(
+        _url,
+        offlineKey: 'champions',
+        isValid: DataDragonService.hasDataMap,
+      ),
+    );
+
+    expect(wrong, {
+      'data': {'Ahri': 1},
+    });
+  });
+
+  test('une copie corrompue remonte une DataDragonException', () async {
+    SharedPreferences.setMockInitialValues({
+      'ddragon_offline_champions': '<html>',
+    });
+
+    final failure = _withServer(
+      (_) async => throw http.ClientException('hors ligne'),
+      () => DataDragonService.fetchJson(_url, offlineKey: 'champions'),
+    );
+
+    await expectLater(failure, throwsA(isA<DataDragonException>()));
+  });
+
+  test('offlineKeepLast efface les copies les plus anciennes', () async {
+    for (final name in ['A', 'B', 'C']) {
+      await _withServer(
+        (_) async => http.Response('{"n":"$name"}', 200),
+        () => DataDragonService.fetchJson(
+          _url,
+          offlineKey: 'champion:$name',
+          offlineKeepLast: 2,
+        ),
+      );
+    }
+
+    Future<dynamic> offline(String name) => _withServer(
+      (_) async => throw http.ClientException('hors ligne'),
+      () => DataDragonService.fetchJson(_url, offlineKey: 'champion:$name'),
+    );
+
+    await expectLater(offline('A'), throwsA(isA<DataDragonException>()));
+    expect(await offline('B'), {'n': 'B'});
+    expect(await offline('C'), {'n': 'C'});
+  });
+
+  test('la version est resservie hors ligne, et un echec se retente', () async {
+    final failure = _withServer(
+      (_) async => throw http.ClientException('hors ligne'),
+      DataDragonService.latestVersion,
+    );
+    await expectLater(failure, throwsA(isA<DataDragonException>()));
+
+    SharedPreferences.setMockInitialValues({
+      'ddragon_offline_versions': '["16.19.1","16.18.1"]',
+    });
+    final version = await _withServer(
+      (_) async => throw http.ClientException('hors ligne'),
+      DataDragonService.latestVersion,
+    );
+
+    expect(version, '16.19.1');
   });
 }

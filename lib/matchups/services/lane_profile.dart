@@ -1,5 +1,5 @@
-import '../../matchups/models/matchup.dart';
-import '../../matchups/services/matchup_service.dart';
+import '../models/matchup.dart';
+import 'matchup_service.dart';
 
 /// Où chaque champion se joue, d'après les parties analysées.
 class LaneProfile {

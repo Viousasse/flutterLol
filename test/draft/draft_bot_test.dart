@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:monapp/draft/models/draft_state.dart';
 import 'package:monapp/draft/services/draft_bot.dart';
-import 'package:monapp/draft/services/lane_profile.dart';
+import 'package:monapp/matchups/services/lane_profile.dart';
 import 'package:monapp/matchups/models/matchup.dart';
 import 'package:monapp/team/constants/team_roles.dart';
 

@@ -3,6 +3,8 @@ import '../models/champion.dart';
 import '../models/champion_detail.dart';
 
 class ChampionService {
+  static const _detailCopiesKept = 12;
+
   static List<Champion>? _cache;
   static Future<List<Champion>>? _pending;
 
@@ -28,6 +30,7 @@ class ChampionService {
       final data = await DataDragonService.fetchJson(
         DataDragonService.dataUrl(version, 'champion.json'),
         offlineKey: 'champions',
+        isValid: DataDragonService.hasDataMap,
       );
       final championsMap = data['data'] as Map<String, dynamic>;
 
@@ -50,6 +53,11 @@ class ChampionService {
 
     final data = await DataDragonService.fetchJson(
       DataDragonService.dataUrl(version, 'champion/$championId.json'),
+      // La fiche d'un champion déjà consulté reste lisible sans réseau ; on
+      // ne garde que les plus récentes pour ne pas remplir le stockage.
+      offlineKey: 'champion:$championId',
+      offlineKeepLast: _detailCopiesKept,
+      isValid: DataDragonService.hasDataMap,
     );
     final championJson = data['data'][championId];
 

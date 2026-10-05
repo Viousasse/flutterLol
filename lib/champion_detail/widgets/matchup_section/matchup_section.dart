@@ -4,6 +4,7 @@ import '../../../champions/models/champion.dart';
 import '../../../matchups/constants/lane_labels.dart';
 import '../../../matchups/models/matchup.dart';
 import '../../../matchups/services/matchup_service.dart';
+import '../../../shared/widgets/data_source_note/data_source_note.dart';
 import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_fonts.dart';
@@ -68,10 +69,11 @@ class MatchupSection extends StatelessWidget {
           ...easiest.map(_row),
         ],
         const SizedBox(height: 10),
+        DataSourceNote(dataset: dataset),
+        const SizedBox(height: 4),
         Text(
-          'Parties classées Master+ du patch ${dataset.patch ?? '?'}, '
-          '${dataset.matches} parties analysées. Une paire jouée moins de '
-          '${MatchupService.minGames} fois n\'est pas affichée.',
+          'Une paire jouée moins de ${MatchupService.minGames} fois n\'est '
+          'pas affichée.',
           style: AppTheme.mono(size: 8.5, color: AppColors.textMuted),
         ),
       ],

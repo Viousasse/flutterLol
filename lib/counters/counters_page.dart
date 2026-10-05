@@ -7,6 +7,7 @@ import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
+import '../shared/widgets/data_source_note/data_source_note.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../shared/widgets/remote_image/remote_image.dart';
 import '../theme/app_colors.dart';
@@ -15,6 +16,8 @@ import 'models/counter_pick.dart';
 import 'services/counter_service.dart';
 import '../shared/widgets/counter_tile/counter_tile.dart';
 import '../shared/widgets/lane_filter_bar/lane_filter_bar.dart';
+import '../matchups/services/lane_profile.dart';
+import '../team/services/role_filters.dart';
 
 /// « Je joue contre ce champion, qui choisir ? » : les champions qui le battent
 /// le plus souvent dans les parties classées Master+ analysées.
@@ -88,6 +91,7 @@ class _CountersPageState extends State<CountersPage> {
       context,
       champions: champions,
       excludedIds: {?opponent?.id},
+      roleFilter: RoleFilters.forProfile(LaneProfile.fromDataset(dataset)),
     );
     if (chosen == null || !mounted) return;
 
@@ -194,10 +198,10 @@ class _CountersPageState extends State<CountersPage> {
           ),
           const SizedBox(height: 10),
         ],
+        DataSourceNote(dataset: dataset),
+        const SizedBox(height: 4),
         Text(
-          'Parties classées Master+ du patch ${dataset.patch ?? '?'}, '
-          '${dataset.matches} parties analysées. Le pourcentage est celui du '
-          'champion proposé face à ${target.name}.',
+          'Le pourcentage est celui du champion proposé face à ${target.name}.',
           style: AppTheme.mono(size: 9, color: AppColors.textMuted),
         ),
       ],
@@ -255,11 +259,7 @@ class _OpponentPicker extends StatelessWidget {
                   ),
                 )
               else
-                Icon(
-                  Icons.person_search,
-                  size: 32,
-                  color: AppColors.accent,
-                ),
+                Icon(Icons.person_search, size: 32, color: AppColors.accent),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(

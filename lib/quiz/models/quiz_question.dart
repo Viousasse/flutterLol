@@ -4,7 +4,7 @@ const quizCategoryLabels = {
   QuizCategory.champions: 'Champions',
   QuizCategory.regions: 'Régions',
   QuizCategory.items: 'Objets',
-  QuizCategory.matchups: 'Matchups',
+  QuizCategory.matchups: 'Duels',
 };
 
 /// Une réponse proposée. L'image est facultative : elle sert aux questions où

@@ -23,6 +23,8 @@ import 'widgets/compare_slot/compare_slot.dart';
 import 'widgets/head_to_head_card/head_to_head_card.dart';
 import 'widgets/saved_build_picker_sheet/saved_build_picker_sheet.dart';
 import 'widgets/stat_compare_row/stat_compare_row.dart';
+import '../matchups/services/lane_profile.dart';
+import '../team/services/role_filters.dart';
 
 /// Deux champions côte à côte, à un niveau et avec les objets de son choix, plus
 /// leur bilan en duel.
@@ -114,6 +116,7 @@ class _ComparePageState extends State<ComparePage> {
       context,
       champions: champions,
       excludedIds: {?other?.id},
+      roleFilter: RoleFilters.forProfile(LaneProfile.fromDataset(dataset)),
     );
     if (chosen == null || !mounted) return;
 

@@ -29,6 +29,24 @@ String formatDraftDate(DateTime date) {
       '${date.hour} h $minutes';
 }
 
+/// Qui l'emporte, dit du point de vue du joueur quand il joue contre le site.
+String draftOutcomeLabel(DraftRecord record) {
+  // Contre le site, « Victoire de Vous » se lirait mal : on parle au joueur.
+  if (!record.versusFriend) {
+    return switch (record.winner) {
+      DraftWinner.blue => 'Vous l’emportez',
+      DraftWinner.red => 'Le site l’emporte',
+      DraftWinner.tie => 'Égalité',
+    };
+  }
+
+  return switch (record.winner) {
+    DraftWinner.blue => 'Victoire de ${record.blueName}',
+    DraftWinner.red => 'Victoire de ${record.redName}',
+    DraftWinner.tie => 'Égalité',
+  };
+}
+
 /// Une draft de l'historique : qui jouait, qui l'a emporté, les dix champions,
 /// et de quoi la partager ou la supprimer.
 class DraftHistoryTile extends StatelessWidget {
@@ -40,88 +58,122 @@ class DraftHistoryTile extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onDelete;
 
+  /// Ouvre le détail de la draft. Sans lui, la tuile n'est pas touchable.
+  final VoidCallback? onTap;
+
   const DraftHistoryTile({
     super.key,
     required this.record,
     required this.imageUrls,
     required this.onShare,
     required this.onDelete,
+    this.onTap,
   });
 
-  String get _outcome {
-    // Contre le site, « Victoire de Vous » se lirait mal : on parle au joueur.
-    if (!record.versusFriend) {
-      return switch (record.winner) {
-        DraftWinner.blue => 'Vous l’emportez',
-        DraftWinner.red => 'Le site l’emporte',
-        DraftWinner.tie => 'Égalité',
-      };
-    }
-
-    return switch (record.winner) {
-      DraftWinner.blue => 'Victoire de ${record.blueName}',
-      DraftWinner.red => 'Victoire de ${record.redName}',
-      DraftWinner.tie => 'Égalité',
-    };
-  }
+  String get _semanticLabel =>
+      '${record.blueName} contre ${record.redName}, ${draftOutcomeLabel(record)}, '
+      '${formatDraftDate(record.playedAt)}'
+      '${record.assisted ? ', jouée avec aide' : ''}'
+      '${record.imported ? ', importée' : ''}';
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 4, 12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
+    // Un Material (et non un Container décoré) pour que l'effet de toucher de
+    // l'InkWell se dessine au-dessus du fond.
+    return Material(
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        side: BorderSide(color: AppColors.border),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${record.blueName} contre ${record.redName}',
-                  style: AppTheme.serif(size: 16),
+            child: Semantics(
+              button: onTap != null,
+              label: _semanticLabel,
+              excludeSemantics: true,
+              onTap: onTap,
+              child: InkWell(
+                onTap: onTap,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 0, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${record.blueName} contre ${record.redName}',
+                        style: AppTheme.serif(size: 16),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '${draftOutcomeLabel(record)} · '
+                        '${formatDraftDate(record.playedAt)}',
+                        style: AppTheme.mono(size: 10, color: AppColors.accent),
+                      ),
+                      if (record.assisted || record.imported) ...[
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            for (final label in [
+                              if (record.assisted) 'AVEC AIDE',
+                              if (record.imported) 'IMPORTÉE',
+                            ])
+                              Text(
+                                label,
+                                style: AppTheme.mono(
+                                  size: 9,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      _Picks(
+                        record: record,
+                        picks: record.blue,
+                        imageUrls: imageUrls,
+                      ),
+                      const SizedBox(height: 6),
+                      _Picks(
+                        record: record,
+                        picks: record.red,
+                        imageUrls: imageUrls,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  '$_outcome · ${formatDraftDate(record.playedAt)}',
-                  style: AppTheme.mono(size: 10, color: AppColors.accent),
-                ),
-                const SizedBox(height: 10),
-                _Picks(
-                  record: record,
-                  picks: record.blue,
-                  imageUrls: imageUrls,
-                ),
-                const SizedBox(height: 6),
-                _Picks(record: record, picks: record.red, imageUrls: imageUrls),
-              ],
+              ),
             ),
           ),
-          Column(
-            children: [
-              IconButton(
-                tooltip: 'Copier le résumé de cette draft',
-                onPressed: onShare,
-                icon: Icon(
-                  Icons.share_outlined,
-                  size: 20,
-                  color: AppColors.textMuted,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 12, 4, 12),
+            child: Column(
+              children: [
+                IconButton(
+                  tooltip: 'Copier le résumé de cette draft',
+                  onPressed: onShare,
+                  icon: Icon(
+                    Icons.share_outlined,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
                 ),
-              ),
-              IconButton(
-                tooltip: 'Supprimer cette draft',
-                onPressed: onDelete,
-                icon: Icon(
-                  Icons.delete_outline,
-                  size: 20,
-                  color: AppColors.textMuted,
+                IconButton(
+                  tooltip: 'Supprimer cette draft',
+                  onPressed: onDelete,
+                  icon: Icon(
+                    Icons.delete_outline,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

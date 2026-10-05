@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'matchup_tally.dart';
+
 /// Calcule les matchups champion contre champion à partir de vraies parties
 /// classées, via l'API officielle de Riot, et écrit le résultat dans
 /// `assets/data/champion_matchups.json`.
@@ -27,7 +29,13 @@ import 'dart:math';
 ///   progression est enregistrée toutes les [_checkpointEvery] parties ;
 /// * `--merge-with <fichier>` additionne les résultats d'un fichier existant,
 ///   par exemple les données actuelles de l'app, au moment d'écrire le fichier
-///   final.
+///   final ;
+/// * `--decay <0..1>` fait vieillir ce fichier existant avant de l'additionner
+///   (0.5 divise son poids par deux) ; 1 par défaut, sans effet ;
+/// * `--min-patch X.Y` ignore les parties d'un patch antérieur (comparaison
+///   numérique : 16.9 précède 16.10).
+///
+/// Voir `tool/README.md` pour le guide complet.
 const _defaultOutput = 'assets/data/champion_matchups.json';
 const _checkpointEvery = 100;
 const _soloQueue = 420;
@@ -55,6 +63,16 @@ Future<void> main(List<String> args) async {
   final output = _stringArg(args, '--output', _defaultOutput);
   final resume = args.contains('--resume');
   final mergeWith = _stringArg(args, '--merge-with', '');
+  final decay = _doubleArg(args, '--decay', 1);
+  final minPatch = _stringArg(args, '--min-patch', '');
+  if (decay < 0 || decay > 1) {
+    stderr.writeln('--decay doit être compris entre 0 et 1.');
+    exit(2);
+  }
+  if (minPatch.isNotEmpty && parsePatch(minPatch) == null) {
+    stderr.writeln('--min-patch attend un patch comme 16.19.');
+    exit(2);
+  }
 
   final riot = _RiotClient(apiKey);
   try {
@@ -81,7 +99,6 @@ Future<void> main(List<String> args) async {
     }
     stdout.writeln();
 
-
     final progress = resume ? _Progress.load(output) : _Progress();
     final tally = progress.tally;
     final patches = progress.patches;
@@ -96,11 +113,9 @@ Future<void> main(List<String> args) async {
 
       final Map<String, dynamic> match;
       try {
-        match =
-            await riot.get(
-                  'https://$region.api.riotgames.com/lol/match/v5/matches/$matchId',
-                )
-                as Map<String, dynamic>;
+        match = await riot.get(
+          'https://$region.api.riotgames.com/lol/match/v5/matches/$matchId',
+        ) as Map<String, dynamic>;
       } on HttpException catch (error) {
         // Une partie supprimée ou devenue inaccessible ne doit pas arrêter un
         // calcul de plusieurs heures. Toute autre réponse (clé refusée ou
@@ -121,6 +136,8 @@ Future<void> main(List<String> args) async {
           .split('.')
           .take(2)
           .join('.');
+      // Déjà marquée traitée plus haut : une reprise ne la relira pas.
+      if (minPatch.isNotEmpty && isBeforePatch(patch, minPatch)) continue;
       patches[patch] = (patches[patch] ?? 0) + 1;
 
       if (_recordMatch(info, tally)) progress.used++;
@@ -136,22 +153,25 @@ Future<void> main(List<String> args) async {
         .reduce((a, b) => a.value >= b.value ? a : b)
         .key;
 
+    var allPatches = Map<String, int>.of(patches);
     if (mergeWith.isNotEmpty) {
       final existing = _readExisting(mergeWith);
-      for (final entry in existing.tally.entries) {
-        final slot = tally.putIfAbsent(entry.key, _Tally.new);
-        slot.games += entry.value.games;
-        slot.wins += entry.value.wins;
-      }
-      used += existing.matches;
-      patch = _patchRange(existing.patch, patch);
+      // Les vieilles parties pèsent moins que les récentes : on fait vieillir
+      // l'existant avant de l'additionner.
+      final aged = decayTally(existing.tally, decay);
+      final agedMatches = decayCount(existing.matches, decay);
+      mergeTally(tally, aged);
+      used += agedMatches;
+      mergePatches(allPatches, decayPatches(existing.patches, decay));
+      patch = patchRange(existing.patch, patch);
       stdout.writeln(
-        'Fusion avec $mergeWith : +${existing.matches} parties (patch '
-        '${existing.patch}).',
+        'Fusion avec $mergeWith : +$agedMatches parties '
+        '(${existing.matches} × $decay, patch ${existing.patch}).',
       );
     }
 
-    File(output).writeAsStringSync(_render(tally, used, patch, platform));
+    File(output)
+        .writeAsStringSync(_render(tally, used, patch, platform, allPatches));
     stdout.writeln(
       '${tally.length ~/ 2} paires distinctes sur $used parties '
       '(patch $patch) → $output',
@@ -163,7 +183,7 @@ Future<void> main(List<String> args) async {
 
 /// Met face à face, voie par voie, le champion bleu et le champion rouge.
 /// Renvoie faux si la partie est inexploitable (voies incomplètes).
-bool _recordMatch(Map<String, dynamic> info, Map<String, _Tally> tally) {
+bool _recordMatch(Map<String, dynamic> info, Map<String, Tally> tally) {
   final participants = (info['participants'] as List)
       .cast<Map<String, dynamic>>();
   var recorded = false;
@@ -179,7 +199,7 @@ bool _recordMatch(Map<String, dynamic> info, Map<String, _Tally> tally) {
     for (final me in inLane) {
       final other = inLane.firstWhere((p) => p != me);
       final key = '${_championId(me)}|${_championId(other)}|$lane';
-      final entry = tally.putIfAbsent(key, _Tally.new);
+      final entry = tally.putIfAbsent(key, Tally.new);
       entry.games++;
       if (me['win'] == true) entry.wins++;
     }
@@ -190,10 +210,11 @@ bool _recordMatch(Map<String, dynamic> info, Map<String, _Tally> tally) {
 }
 
 String _render(
-  Map<String, _Tally> tally,
+  Map<String, Tally> tally,
   int matches,
   String patch,
   String platform,
+  Map<String, int> patches,
 ) {
   final matchups = tally.entries.map((entry) {
     final parts = entry.key.split('|');
@@ -212,13 +233,13 @@ String _render(
     'platform': platform,
     'rank': 'MASTER+',
     'matches': matches,
+    // Informatif : parties par patch (pondérées par --decay), ignoré par l'app.
+    'patches': {
+      for (final key in patches.keys.toList()..sort(comparePatches))
+        key: patches[key],
+    },
     'matchups': matchups,
   });
-}
-
-class _Tally {
-  int games = 0;
-  int wins = 0;
 }
 
 /// Client minimal qui respecte la limite d'une clé de développement
@@ -285,6 +306,12 @@ int _intArg(List<String> args, String name, int fallback) {
   return int.tryParse(args[index + 1]) ?? fallback;
 }
 
+double _doubleArg(List<String> args, String name, double fallback) {
+  final index = args.indexOf(name);
+  if (index < 0 || index + 1 >= args.length) return fallback;
+  return double.tryParse(args[index + 1]) ?? fallback;
+}
+
 String _stringArg(List<String> args, String name, String fallback) {
   final index = args.indexOf(name);
   if (index < 0 || index + 1 >= args.length) return fallback;
@@ -294,7 +321,7 @@ String _stringArg(List<String> args, String name, String fallback) {
 /// Ce qu'il faut garder pour reprendre un calcul interrompu : les bilans déjà
 /// comptés et les parties déjà traitées, pour ne pas les compter deux fois.
 class _Progress {
-  final Map<String, _Tally> tally = {};
+  final Map<String, Tally> tally = {};
   final Set<String> matchIds = {};
   final Map<String, int> patches = {};
   int used = 0;
@@ -331,7 +358,7 @@ class _Progress {
     progress.matchIds.addAll((data['matchIds'] as List).cast<String>());
     for (final entry in (data['tally'] as Map).entries) {
       final values = (entry.value as List).cast<int>();
-      progress.tally[entry.key as String] = _Tally()
+      progress.tally[entry.key as String] = Tally()
         ..games = values[0]
         ..wins = values[1];
     }
@@ -341,46 +368,36 @@ class _Progress {
 }
 
 class _Existing {
-  final Map<String, _Tally> tally;
+  final Map<String, Tally> tally;
   final int matches;
   final String patch;
+  final Map<String, int> patches;
 
-  const _Existing(this.tally, this.matches, this.patch);
+  const _Existing(this.tally, this.matches, this.patch, this.patches);
 }
 
 /// Relit un fichier de matchups déjà généré pour l'additionner au nouveau.
 _Existing _readExisting(String path) {
   final data =
       jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
-  final tally = <String, _Tally>{};
+  final tally = <String, Tally>{};
 
   for (final raw in (data['matchups'] as List).cast<Map<String, dynamic>>()) {
     final key = '${raw['champion']}|${raw['opponent']}|${raw['lane']}';
-    tally[key] = _Tally()
+    tally[key] = Tally()
       ..games = raw['games'] as int
       ..wins = raw['wins'] as int;
   }
+
+  final patches = <String, int>{
+    for (final entry in ((data['patches'] as Map?) ?? const {}).entries)
+      entry.key as String: entry.value as int,
+  };
 
   return _Existing(
     tally,
     data['matches'] as int? ?? 0,
     data['patch'] as String? ?? '?',
+    patches,
   );
-}
-
-/// « 16.18 » et « 16.20 » donnent « 16.18–16.20 » ; deux patchs identiques
-/// restent un seul patch. Le fichier mélange alors deux versions du jeu, et
-/// l'écran de l'app l'affiche tel quel plutôt que de le cacher.
-String _patchRange(String a, String b) {
-  if (a == b) return a;
-
-  int order(String patch) {
-    final parts = patch.split('.').map((p) => int.tryParse(p) ?? 0).toList();
-
-    return parts[0] * 1000 + (parts.length > 1 ? parts[1] : 0);
-  }
-
-  final sorted = [a, b]..sort((x, y) => order(x).compareTo(order(y)));
-
-  return '${sorted.first}–${sorted.last}';
 }

@@ -7,10 +7,12 @@ import '../items/services/item_service.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/services/clipboard_copy/clipboard_copy.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
+import '../shared/widgets/paste_code_dialog/paste_code_dialog.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'build_editor_page.dart';
 import 'models/build.dart';
+import 'services/build_share_code.dart';
 import 'services/build_share_text.dart';
 import 'services/build_store.dart';
 import 'widgets/build_tile/build_tile.dart';
@@ -115,10 +117,37 @@ class _BuildsPageState extends State<BuildsPage> {
     if (confirmed == true) await BuildStore.delete(build.id);
   }
 
+  Future<void> importBuild() async {
+    final build = await PasteCodeDialog.show<Build>(
+      context,
+      title: 'Importer une build',
+      hint: 'Collez le code ou le message reçu (LOLB1...)',
+      parse: BuildShareCode.decode,
+      invalidMessage: 'Ce texte ne contient pas de code de build valide.',
+    );
+    if (build == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context)..clearSnackBars();
+    final saving = BuildStore.save(build);
+    messenger.showSnackBar(
+      SnackBar(content: Text('Build « ${build.name} » importée')),
+    );
+    await saving;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Mes builds', style: AppTheme.serif(size: 24))),
+      appBar: AppBar(
+        title: Text('Mes builds', style: AppTheme.serif(size: 24)),
+        actions: [
+          IconButton(
+            tooltip: 'Importer une build',
+            onPressed: isLoading || errorMessage != null ? null : importBuild,
+            icon: const Icon(Icons.download_outlined),
+          ),
+        ],
+      ),
       floatingActionButton: isLoading || errorMessage != null
           ? null
           : FloatingActionButton.extended(
@@ -174,7 +203,11 @@ class _BuildsPageState extends State<BuildsPage> {
               onDelete: () => confirmDelete(build),
               onShare: () => copyToClipboard(
                 context,
-                BuildShareText.of(build, _itemsOf(build), _championNameOf(build)),
+                BuildShareText.of(
+                  build,
+                  _itemsOf(build),
+                  _championNameOf(build),
+                ),
                 message: 'Résumé de la build copié',
               ),
             );

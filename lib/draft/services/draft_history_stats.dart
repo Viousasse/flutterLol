@@ -27,6 +27,13 @@ class DraftHistoryStats {
   final int losses;
   final List<PickCount> mostPicked;
 
+  /// Drafts jouées avec les conseils, tous modes confondus.
+  final int assistedCount;
+
+  /// Drafts reçues par code : elles comptent dans le total et les champions,
+  /// pas dans le taux de victoire.
+  final int importedCount;
+
   const DraftHistoryStats({
     required this.total,
     required this.againstSite,
@@ -34,6 +41,8 @@ class DraftHistoryStats {
     required this.ties,
     required this.losses,
     required this.mostPicked,
+    this.assistedCount = 0,
+    this.importedCount = 0,
   });
 
   /// Part des drafts contre le site que le joueur a gagnées, ou `null` s'il n'en
@@ -63,12 +72,23 @@ class DraftHistoryStats {
       }
     }
 
+    var assistedCount = 0;
+    var importedCount = 0;
+
     for (final record in records) {
+      if (record.assisted) assistedCount++;
+      if (record.imported) importedCount++;
       count(record, record.blue);
       if (record.versusFriend) {
         count(record, record.red);
         continue;
       }
+
+      // Le joueur d'une draft reçue n'est pas vous.
+      if (record.imported) continue;
+
+      // Avec les conseils, la victoire ne mesure plus le niveau du joueur.
+      if (record.assisted) continue;
 
       againstSite++;
       switch (record.winner) {
@@ -94,6 +114,8 @@ class DraftHistoryStats {
       wins: wins,
       ties: ties,
       losses: losses,
+      assistedCount: assistedCount,
+      importedCount: importedCount,
       mostPicked: [
         for (final entry in ranked.take(topCount))
           PickCount(

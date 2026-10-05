@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../champions/services/champion_service.dart';
 import '../shared/widgets/app_filter_chip/app_filter_chip.dart';
 import '../items/services/item_service.dart';
+import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
@@ -37,6 +38,7 @@ const _timedOutIndex = -1;
 
 class _QuizPageState extends State<QuizPage> {
   QuizGenerator? generator;
+  Set<QuizCategory> availableCategories = {...QuizCategory.values};
   bool isLoading = true;
   String? errorMessage;
 
@@ -65,13 +67,23 @@ class _QuizPageState extends State<QuizPage> {
     super.dispose();
   }
 
+  /// Les duels enrichissent le quiz mais ne le conditionnent pas : un fichier
+  /// absent ou illisible donne un jeu vide, et la famille « Duels » disparaît.
+  Future<MatchupDataset> _loadMatchups() async {
+    try {
+      return await MatchupService.load();
+    } catch (_) {
+      return const MatchupDataset.empty();
+    }
+  }
+
   Future<void> loadData() async {
     try {
       // Lancés ensemble, récupérés typés : Future.wait aurait rendu une liste
       // d'Object? qu'il aurait fallu recaster.
       final championsRequest = ChampionService.fetchAll();
       final itemsRequest = ItemService.fetchAll();
-      final matchupsRequest = MatchupService.load();
+      final matchupsRequest = _loadMatchups();
       final scoreRequest = QuizScoreService.ensureLoaded();
 
       final data = QuizData(
@@ -83,7 +95,10 @@ class _QuizPageState extends State<QuizPage> {
 
       if (!mounted) return;
       setState(() {
-        generator = QuizGenerator(data);
+        final built = QuizGenerator(data);
+        generator = built;
+        availableCategories = built.availableCategories();
+        if (!availableCategories.contains(category)) category = null;
         isLoading = false;
       });
       _draw();
@@ -229,7 +244,11 @@ class _QuizPageState extends State<QuizPage> {
       QuizScoreBar(streak: streak, correct: correct, answered: answered),
       const QuizHistory(),
       const SizedBox(height: 12),
-      QuizCategoryBar(selected: category, onSelect: _selectCategory),
+      QuizCategoryBar(
+        selected: category,
+        onSelect: _selectCategory,
+        available: availableCategories,
+      ),
       const SizedBox(height: 8),
       Align(
         alignment: Alignment.centerLeft,

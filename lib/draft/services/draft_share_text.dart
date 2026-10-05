@@ -1,6 +1,7 @@
 import '../../team/constants/team_roles.dart';
 import '../models/draft_record.dart';
 import '../models/draft_report.dart';
+import 'draft_share_code.dart';
 
 /// Le résumé d'une draft en texte brut, à coller dans un message.
 class DraftShareText {
@@ -17,6 +18,8 @@ class DraftShareText {
     ];
 
     if (record.verdict.isNotEmpty) lines.add(record.verdict);
+
+    lines.add('Code : ${DraftShareCode.encode(record)}');
 
     return lines.join('\n');
   }

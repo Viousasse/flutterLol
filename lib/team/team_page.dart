@@ -19,6 +19,8 @@ import 'services/team_analyzer.dart';
 import 'widgets/damage_split_bar/damage_split_bar.dart';
 import 'widgets/insight_tile/insight_tile.dart';
 import 'widgets/team_slot/team_slot.dart';
+import '../matchups/services/lane_profile.dart';
+import 'services/role_filters.dart';
 
 /// Compose une équipe de cinq champions et dit ce qui lui manque : dégâts
 /// physiques ou magiques, première ligne, contrôle.
@@ -38,6 +40,10 @@ class _TeamPageState extends State<TeamPage> {
   final Map<String, ChampionDetail> details = {};
   final Set<String> loadingIds = {};
 
+  /// Où chaque champion se joue, pour le filtre de rôle. Chargé sans bloquer
+  /// l'écran : sans lui, la feuille de choix n'a simplement pas de puces.
+  LaneProfile? laneProfile;
+
   bool isLoading = true;
   String? errorMessage;
 
@@ -48,6 +54,11 @@ class _TeamPageState extends State<TeamPage> {
   }
 
   Future<void> loadChampions() async {
+    RoleFilters.loadProfile().then((profile) {
+      if (!mounted) return;
+      setState(() => laneProfile = profile);
+    });
+
     try {
       final loaded = await ChampionService.fetchAll();
 
@@ -80,6 +91,7 @@ class _TeamPageState extends State<TeamPage> {
       context,
       champions: champions,
       excludedIds: _teamIds,
+      roleFilter: RoleFilters.forProfile(laneProfile, roleIndex: index),
     );
     if (chosen == null || !mounted) return;
 

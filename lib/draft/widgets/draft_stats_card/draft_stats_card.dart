@@ -17,7 +17,8 @@ class DraftStatsCard extends StatelessWidget {
     required this.imageUrls,
   });
 
-  String _plural(int count, String noun) => '$count $noun${count > 1 ? 's' : ''}';
+  String _plural(int count, String noun) =>
+      '$count $noun${count > 1 ? 's' : ''}';
 
   String get _record {
     final rate = stats.winRate;
@@ -54,6 +55,23 @@ class DraftStatsCard extends StatelessWidget {
             _record,
             style: AppTheme.serif(size: 14, color: AppColors.textSecondary),
           ),
+          if (stats.assistedCount > 0) ...[
+            const SizedBox(height: 4),
+            Text(
+              'dont ${stats.assistedCount} avec aide '
+              '(non comptées dans le taux)',
+              style: AppTheme.serif(size: 13, color: AppColors.textMuted),
+            ),
+          ],
+          if (stats.importedCount > 0) ...[
+            const SizedBox(height: 4),
+            Text(
+              'dont ${stats.importedCount} '
+              '${stats.importedCount > 1 ? 'importées' : 'importée'} '
+              '(non comptées dans le taux)',
+              style: AppTheme.serif(size: 13, color: AppColors.textMuted),
+            ),
+          ],
           if (stats.mostPicked.isNotEmpty) ...[
             const SizedBox(height: 14),
             Text('LES PLUS CHOISIS', style: AppTheme.mono(size: 9)),

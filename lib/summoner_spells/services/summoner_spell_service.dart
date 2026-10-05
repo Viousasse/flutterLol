@@ -28,6 +28,7 @@ class SummonerSpellService {
       final data = await DataDragonService.fetchJson(
         DataDragonService.dataUrl(version, 'summoner.json'),
         offlineKey: 'summoners',
+        isValid: DataDragonService.hasDataMap,
       );
       final raw = data['data'] as Map<String, dynamic>;
 

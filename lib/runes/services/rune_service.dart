@@ -36,6 +36,7 @@ class RuneService {
     final response = await DataDragonService.fetchJson(
       DataDragonService.dataUrl(version, 'runesReforged.json'),
       offlineKey: 'runes',
+      isValid: (decoded) => decoded is List,
     );
     final trees = (response as List)
         .map((json) => RuneTree.fromJson(json))

@@ -77,7 +77,11 @@ class QuizQuestionCard extends StatelessWidget {
             );
           }),
           if (answered)
-            _Verdict(question: question, chosenIndex: chosen, timedOut: timedOut),
+            _Verdict(
+              question: question,
+              chosenIndex: chosen,
+              timedOut: timedOut,
+            ),
           if (answered) ...[
             const SizedBox(height: 12),
             _NextButton(onTap: onNext),

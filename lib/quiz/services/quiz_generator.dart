@@ -3,11 +3,11 @@ import 'dart:math';
 import '../../champions/models/champion.dart';
 import '../../items/models/item.dart';
 import '../../matchups/models/matchup.dart';
-import '../../matchups/services/matchup_service.dart';
 import '../../regions/constants/champion_regions.dart';
 import '../../regions/constants/lore_regions.dart';
 import '../../regions/models/lore_region.dart';
 import '../models/quiz_question.dart';
+import 'duel_question_builder.dart';
 
 /// Les données dont les questions sont tirées. Tout vient de ce que l'app
 /// charge déjà : aucune requête n'est faite pour le quiz.
@@ -32,11 +32,33 @@ class QuizData {
 class QuizGenerator {
   final QuizData data;
   final Random _random;
+  late final DuelQuestionBuilder _duels;
 
-  QuizGenerator(this.data, {int? seed}) : _random = Random(seed);
+  QuizGenerator(this.data, {int? seed}) : _random = Random(seed) {
+    _duels = DuelQuestionBuilder(
+      _random,
+      matchups: data.matchups,
+      champions: data.champions,
+    );
+  }
 
   /// Nombre de propositions par question.
   static const optionCount = 4;
+
+  /// Les familles pour lesquelles les données permettent au moins une
+  /// question. Sans matchups, « Duels » n'en fait pas partie : l'écran la
+  /// masque au lieu de proposer une catégorie qui ne rend rien.
+  ///
+  /// Le sondage passe par un générateur à part pour ne pas entamer la série
+  /// de celui qui sert au quiz.
+  Set<QuizCategory> availableCategories() {
+    final probe = QuizGenerator(data, seed: 0);
+
+    return {
+      for (final category in QuizCategory.values)
+        if (probe.next(category: category) != null) category,
+    };
+  }
 
   /// Une question tirée au hasard, éventuellement restreinte à une famille.
   ///
@@ -54,6 +76,10 @@ class QuizGenerator {
         return question;
       }
     }
+
+    // Les duels déjà posés ont tous servi : la série repart plutôt que de
+    // laisser la famille muette.
+    if (_duels.startOver()) return next(category: category, avoid: avoid);
 
     return null;
   }
@@ -77,7 +103,7 @@ class QuizGenerator {
         _mostExpensiveItem,
         _itemFromComponents,
       ],
-      QuizCategory.matchups: <QuizQuestion? Function()>[_bestMatchup],
+      QuizCategory.matchups: _duels.builders,
     };
 
     if (category != null) return [...byCategory[category]!];
@@ -334,52 +360,6 @@ class QuizGenerator {
             .map((i) => QuizOptionData(i.name, imageUrl: i.imageUrl)),
       ],
     );
-  }
-
-  // --- Matchups ---
-
-  /// Demande contre qui un champion s'en sort le mieux, d'après les parties
-  /// réellement comptées. On exige un écart net avec le deuxième, sinon la
-  /// question tiendrait du tirage au sort.
-  QuizQuestion? _bestMatchup() {
-    if (data.matchups.isEmpty) return null;
-
-    final championIds =
-        data.matchups.matchups.map((m) => m.championId).toSet().toList()
-          ..shuffle(_random);
-
-    for (final championId in championIds) {
-      final ranked = MatchupService.easiestFor(championId, data.matchups);
-      if (ranked.length < optionCount) continue;
-      if (ranked[0].winRate - ranked[1].winRate < 0.12) continue;
-
-      final champion = data.champions
-          .where((c) => c.id == championId)
-          .firstOrNull;
-      if (champion == null) continue;
-
-      final opponents = ranked.take(optionCount).toList();
-      final best = opponents.first;
-
-      return _question(
-        category: QuizCategory.matchups,
-        prompt: 'Contre lequel ${champion.name} gagne-t-il le plus souvent ?',
-        imageUrl: champion.imageUrl,
-        options: opponents
-            .map((m) => QuizOptionData(_nameOf(m.opponentId)))
-            .toList(),
-        explanation:
-            '${(best.winRate * 100).round()} % de victoires sur '
-            '${best.games} parties classées Master+.',
-      );
-    }
-
-    return null;
-  }
-
-  String _nameOf(String championId) {
-    return data.champions.where((c) => c.id == championId).firstOrNull?.name ??
-        championId;
   }
 
   // --- Fabrication commune ---

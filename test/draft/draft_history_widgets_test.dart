@@ -12,6 +12,8 @@ import 'draft_support.dart';
 DraftRecord _record({
   DraftWinner winner = DraftWinner.blue,
   bool versusFriend = false,
+  bool assisted = false,
+  bool imported = false,
 }) {
   final blue = ['Ahri', 'Garen', 'Lux', 'Jinx', 'Thresh'];
   final red = ['Zed', 'Fizz', 'Yone', 'Ashe', 'Nami'];
@@ -33,6 +35,8 @@ DraftRecord _record({
     blueScore: 3,
     redScore: 2,
     verdict: '',
+    assisted: assisted,
+    imported: imported,
   );
 }
 
@@ -106,6 +110,30 @@ void main() {
       );
       expect(find.textContaining('(50 %)'), findsOneWidget);
       expect(find.text('LES PLUS CHOISIS'), findsOneWidget);
+    });
+
+    testWidgets('signale les drafts avec aide, non comptées dans le taux', (
+      tester,
+    ) async {
+      final stats = DraftHistoryStats.of([_record(), _record(assisted: true)]);
+      await tester.pumpWidget(
+        _host(DraftStatsCard(stats: stats, imageUrls: const {})),
+      );
+
+      expect(
+        find.text('dont 1 avec aide (non comptées dans le taux)'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('(100 %)'), findsOneWidget);
+    });
+
+    testWidgets('sans draft avec aide, n en parle pas', (tester) async {
+      final stats = DraftHistoryStats.of([_record()]);
+      await tester.pumpWidget(
+        _host(DraftStatsCard(stats: stats, imageUrls: const {})),
+      );
+
+      expect(find.textContaining('avec aide'), findsNothing);
     });
 
     testWidgets('sans draft contre le site, ne donne pas de taux', (
@@ -183,10 +211,100 @@ void main() {
       expect(deleted, 1);
     });
 
+    testWidgets('étiquette « avec aide » et s ouvre au toucher', (
+      tester,
+    ) async {
+      var opened = 0;
+      await tester.pumpWidget(
+        _host(
+          DraftHistoryTile(
+            record: _record(assisted: true),
+            imageUrls: const {},
+            onShare: () {},
+            onDelete: () {},
+            onTap: () => opened++,
+          ),
+        ),
+      );
+
+      expect(find.text('AVEC AIDE'), findsOneWidget);
+
+      await tester.tap(find.text('Vous contre Le site'));
+      expect(opened, 1);
+    });
+
+    testWidgets('sans aide, pas d étiquette', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          DraftHistoryTile(
+            record: _record(),
+            imageUrls: const {},
+            onShare: () {},
+            onDelete: () {},
+          ),
+        ),
+      );
+
+      expect(find.text('AVEC AIDE'), findsNothing);
+    });
+
+    testWidgets('a un seul libellé sémantique pour la tuile', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _host(
+          DraftHistoryTile(
+            record: _record(),
+            imageUrls: const {},
+            onShare: () {},
+            onDelete: () {},
+            onTap: () {},
+          ),
+        ),
+      );
+
+      expect(
+        find.bySemanticsLabel(
+          'Vous contre Le site, Vous l’emportez, 5 oct. 2026, 9 h 05',
+        ),
+        findsOneWidget,
+      );
+      handle.dispose();
+    });
+
     test('formate une date avec des minutes sur deux chiffres', () {
       expect(
         formatDraftDate(DateTime(2026, 1, 3, 14, 7)),
         '3 janv. 2026, 14 h 07',
+      );
+    });
+  });
+
+  group('drafts importées', () {
+    testWidgets('la tuile porte l étiquette IMPORTÉE', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          DraftHistoryTile(
+            record: _record(imported: true, assisted: true),
+            imageUrls: const {},
+            onShare: () {},
+            onDelete: () {},
+          ),
+        ),
+      );
+
+      expect(find.text('IMPORTÉE'), findsOneWidget);
+      expect(find.text('AVEC AIDE'), findsOneWidget);
+    });
+
+    testWidgets('le bilan compte les importées à part', (tester) async {
+      final stats = DraftHistoryStats.of([_record(), _record(imported: true)]);
+      await tester.pumpWidget(
+        _host(DraftStatsCard(stats: stats, imageUrls: const {})),
+      );
+
+      expect(
+        find.text('dont 1 importée (non comptées dans le taux)'),
+        findsOneWidget,
       );
     });
   });
