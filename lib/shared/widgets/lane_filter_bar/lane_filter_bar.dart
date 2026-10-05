@@ -21,7 +21,9 @@ class LaneFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 7,
-      runSpacing: 7,
+      // Les puces font 44 px de zone tactile pour 32 visibles : plus d'écart
+      // entre les lignes, la zone tactile en fournit déjà.
+      runSpacing: 0,
       children: [
         _chip(label: 'Toutes les voies', lane: null),
         for (final lane in lanes) _chip(label: laneLabels[lane] ?? lane, lane: lane),
@@ -31,7 +33,7 @@ class LaneFilterBar extends StatelessWidget {
 
   Widget _chip({required String label, required String? lane}) {
     return SizedBox(
-      height: 32,
+      height: AppFilterChip.minTapHeight,
       child: AppFilterChip(
         label: label,
         selected: selectedLane == lane,

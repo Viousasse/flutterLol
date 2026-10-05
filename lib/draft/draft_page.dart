@@ -943,9 +943,12 @@ class _SuggestionsPanel extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
-          child: Text(
-            'SUGGESTIONS',
-            style: AppTheme.mono(size: 10, color: AppColors.accent),
+          child: Semantics(
+            header: true,
+            child: Text(
+              'SUGGESTIONS',
+              style: AppTheme.mono(size: 10, color: AppColors.accent),
+            ),
           ),
         ),
         for (final suggestion in suggestions)

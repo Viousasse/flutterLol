@@ -65,7 +65,10 @@ class ThemeModeSheet extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: Text('Affichage', style: AppTheme.serif(size: 20)),
+                  child: Semantics(
+                    header: true,
+                    child: Text('Affichage', style: AppTheme.serif(size: 20)),
+                  ),
                 ),
                 for (final option in _options)
                   ListTile(

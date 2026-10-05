@@ -182,7 +182,9 @@ class _RoleChips extends StatelessWidget {
       height: 44,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+        // Pas de marge verticale : les puces prennent les 44 px de la rangée
+        // comme zone tactile, la pastille visible reste de 32 px.
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
           _chip('Tous', null),
           for (final entry in filter.roles.entries)

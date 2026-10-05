@@ -19,7 +19,7 @@ class DraftReportView extends StatelessWidget {
       children: [
         _Verdict(report: report),
         const SizedBox(height: 22),
-        Text('POURQUOI', style: AppTheme.mono(size: 9)),
+        const _SectionTitle('POURQUOI'),
         const SizedBox(height: 8),
         for (final criterion in report.criteria)
           CriterionTile(criterion: criterion, players: report.players),
@@ -50,6 +50,22 @@ class DraftReportView extends StatelessWidget {
   }
 }
 
+/// Le titre d'une section du bilan, annoncé comme un titre : les lecteurs
+/// d'écran permettent de sauter de titre en titre dans un bilan long.
+class _SectionTitle extends StatelessWidget {
+  final String text;
+
+  const _SectionTitle(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      header: true,
+      child: Text(text, style: AppTheme.mono(size: 9)),
+    );
+  }
+}
+
 /// Ce que valent les bannissements d'un camp. En duel, [owner] donne le nom du
 /// joueur concerné ; contre le site, seul le joueur est jugé, sans titre.
 class _BanNotes extends StatelessWidget {
@@ -67,7 +83,7 @@ class _BanNotes extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('BANNISSEMENTS$suffix', style: AppTheme.mono(size: 9)),
+        _SectionTitle('BANNISSEMENTS$suffix'),
         const SizedBox(height: 8),
         for (final note in notes) _Bullet(text: note),
       ],
@@ -96,12 +112,12 @@ class _Advice extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (strengths.isNotEmpty) ...[
-          Text('CE QUI VA BIEN$suffix', style: AppTheme.mono(size: 9)),
+          _SectionTitle('CE QUI VA BIEN$suffix'),
           const SizedBox(height: 8),
           for (final strength in strengths) _Bullet(text: strength),
           const SizedBox(height: 12),
         ],
-        Text('À AMÉLIORER$suffix', style: AppTheme.mono(size: 9)),
+        _SectionTitle('À AMÉLIORER$suffix'),
         const SizedBox(height: 8),
         for (final improvement in improvements) _Bullet(text: improvement),
       ],
@@ -138,9 +154,12 @@ class _Verdict extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'VERDICT',
-            style: AppTheme.mono(size: 9, color: AppColors.accent),
+          Semantics(
+            header: true,
+            child: Text(
+              'VERDICT',
+              style: AppTheme.mono(size: 9, color: AppColors.accent),
+            ),
           ),
           const SizedBox(height: 6),
           Text(title, style: AppTheme.serif(size: 22)),
