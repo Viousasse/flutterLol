@@ -18,15 +18,17 @@ class ChampionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final role = champion.tags.isNotEmpty ? champion.tags.first : '';
 
+    void openDetail() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChampionDetailPage(championId: champion.id),
+        ),
+      );
+    }
+
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChampionDetailPage(championId: champion.id),
-          ),
-        );
-      },
+      onTap: openDetail,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),

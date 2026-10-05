@@ -16,18 +16,26 @@ class ChampionCardFavoriteBadge extends StatelessWidget {
     return Positioned(
       top: 6,
       right: 6,
-      child: GestureDetector(
+      // Une icône seule n'a pas de nom : sans cette étiquette, un lecteur
+      // d'écran annonce « bouton » sans dire ce qu'il fait ni son état.
+      child: Semantics(
+        button: true,
+        label: isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris',
+        excludeSemantics: true,
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: AppColors.background.withValues(alpha: 0.55),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            isFavorite ? Icons.star : Icons.star_border,
-            size: 16,
-            color: isFavorite ? AppColors.accent : AppColors.textPrimary,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.background.withValues(alpha: 0.55),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isFavorite ? Icons.star : Icons.star_border,
+              size: 16,
+              color: isFavorite ? AppColors.accent : AppColors.textPrimary,
+            ),
           ),
         ),
       ),

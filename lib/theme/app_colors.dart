@@ -9,7 +9,9 @@ class AppColors {
   /// interdisait de marquer ces couleurs constantes, et par ricochet tous les
   /// widgets qui les utilisent.
   static const textSecondary = Color.fromRGBO(244, 239, 234, 0.55);
-  static const textMuted = Color.fromRGBO(244, 239, 234, 0.35);
+  /// À 0,5 d'opacité le texte atteint le rapport de contraste 4,5:1 exigé par
+  /// le RGAA sur le fond sombre ; à 0,35 il restait à 3:1 environ.
+  static const textMuted = Color.fromRGBO(244, 239, 234, 0.5);
   static const border = Color.fromRGBO(244, 239, 234, 0.08);
   static const accentSoft = Color.fromRGBO(224, 122, 95, 0.14);
 }

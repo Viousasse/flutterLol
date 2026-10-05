@@ -67,7 +67,13 @@ class _MainNavigationState extends State<MainNavigation> {
             children: List.generate(labels.length, (index) {
               final selected = currentIndex == index;
               return Expanded(
-                child: GestureDetector(
+                child: Semantics(
+                  button: true,
+                  selected: selected,
+                  label: labels[index],
+                  excludeSemantics: true,
+                  onTap: () => _openTab(index),
+                  child: GestureDetector(
                   onTap: () => _openTab(index),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -98,6 +104,7 @@ class _MainNavigationState extends State<MainNavigation> {
                         ),
                       ),
                     ),
+                  ),
                   ),
                 ),
               );
