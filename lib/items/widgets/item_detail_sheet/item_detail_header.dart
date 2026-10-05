@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../models/item.dart';
+import '../../services/item_favorites_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
@@ -61,6 +62,23 @@ class ItemDetailHeader extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        ValueListenableBuilder<Set<String>>(
+          valueListenable: ItemFavoritesService.favorites,
+          builder: (context, favorites, _) {
+            final isFavorite = favorites.contains(item.id);
+
+            return IconButton(
+              onPressed: () => ItemFavoritesService.toggleFavorite(item.id),
+              tooltip: isFavorite
+                  ? 'Retirer des favoris'
+                  : 'Ajouter aux favoris',
+              icon: Icon(
+                isFavorite ? Icons.star : Icons.star_border,
+                color: isFavorite ? AppColors.accent : AppColors.textPrimary,
+              ),
+            );
+          },
         ),
       ],
     );

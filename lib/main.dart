@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'champions/services/favorites_service.dart';
+import 'items/services/item_favorites_service.dart';
 import 'theme/app_theme.dart';
 import 'main_navigation/main_navigation.dart';
 
@@ -8,7 +9,10 @@ void main() async {
 
   // Les favoris sont relus du disque avant le premier rendu : sans ça, les
   // étoiles des cartes s'allumeraient après coup.
-  await FavoritesService.ensureLoaded();
+  await Future.wait([
+    FavoritesService.ensureLoaded(),
+    ItemFavoritesService.ensureLoaded(),
+  ]);
 
   runApp(const MyApp());
 }

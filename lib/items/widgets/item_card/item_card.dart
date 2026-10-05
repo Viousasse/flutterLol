@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/widgets/remote_image/remote_image.dart';
 import '../../../theme/app_fonts.dart';
 import '../../models/item.dart';
+import '../../services/item_favorites_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
@@ -62,6 +63,13 @@ class ItemCard extends StatelessWidget {
                 Text(
                   '${item.gold}',
                   style: AppTheme.mono(size: 11, color: AppColors.accent),
+                ),
+                const Spacer(),
+                ValueListenableBuilder<Set<String>>(
+                  valueListenable: ItemFavoritesService.favorites,
+                  builder: (context, favorites, _) => favorites.contains(item.id)
+                      ? const Icon(Icons.star, size: 13, color: AppColors.accent)
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),
