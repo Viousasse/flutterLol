@@ -73,6 +73,34 @@ class MatchupService {
     return OverallRecord(games: games, wins: wins);
   }
 
+  /// En dessous, la voie la plus jouée repose sur trop peu de parties pour être
+  /// fiable : on préfère dire qu'on ne la connaît pas.
+  static const minGamesForMainLane = 30;
+
+  /// La voie où [championId] a joué le plus de parties, ou `null` si les
+  /// données sont trop rares pour l'affirmer.
+  static String? mainLaneOf(String championId, MatchupDataset dataset) {
+    final gamesByLane = <String, int>{};
+
+    for (final matchup in dataset.matchups) {
+      if (matchup.championId != championId) continue;
+      gamesByLane[matchup.lane] =
+          (gamesByLane[matchup.lane] ?? 0) + matchup.games;
+    }
+
+    String? mainLane;
+    var mostGames = 0;
+
+    for (final entry in gamesByLane.entries) {
+      if (entry.value > mostGames) {
+        mainLane = entry.key;
+        mostGames = entry.value;
+      }
+    }
+
+    return mostGames >= minGamesForMainLane ? mainLane : null;
+  }
+
   /// Le bilan face à un adversaire précis, toutes voies confondues, ou `null`
   /// si les deux champions ne se sont jamais rencontrés assez souvent.
   static Matchup? headToHead(

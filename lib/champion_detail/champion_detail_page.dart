@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../champions/models/champion.dart';
 import '../builds/build_editor_page.dart';
 import '../compare/compare_page.dart';
+import '../counters/counters_page.dart';
 import '../shared/widgets/action_link/action_link.dart';
 import '../shared/widgets/expandable_text/expandable_text.dart';
 import '../champions/models/champion_detail.dart';
@@ -23,6 +24,10 @@ import 'widgets/champion_hero_banner/champion_hero_banner.dart';
 import 'widgets/matchup_section/matchup_section.dart';
 import 'widgets/rune_plan_section/rune_plan_section.dart';
 import 'widgets/skin_gallery/skin_gallery.dart';
+import 'widgets/summoner_spell_section/summoner_spell_section.dart';
+import '../summoner_spells/models/summoner_spell.dart';
+import '../summoner_spells/services/summoner_spell_recommender.dart';
+import '../summoner_spells/services/summoner_spell_service.dart';
 import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
 import '../theme/app_colors.dart';
@@ -49,6 +54,9 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
   MatchupDataset matchups = const MatchupDataset.empty();
   List<Champion> allChampions = const [];
   bool isLoadingMatchups = true;
+
+  List<SummonerSpell> summonerSpells = const [];
+  String summonerSpellReason = '';
 
   @override
   void initState() {
@@ -87,6 +95,7 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
         isLoading = false;
       });
       loadRecommendation(result.tags);
+      loadSummonerSpells(result.tags);
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -103,6 +112,28 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
       isLoadingRecommendation = true;
     });
     loadDetail();
+  }
+
+  /// Les sorts conseillés sont un bonus : sans eux, la fiche reste complète.
+  /// La voie la plus jouée vient des matchups ; sans elle, c'est le profil du
+  /// champion qui décide.
+  Future<void> loadSummonerSpells(List<String> tags) async {
+    try {
+      final dataset = await MatchupService.load();
+      final plan = SummonerSpellRecommender.recommend(
+        tags: tags,
+        lane: MatchupService.mainLaneOf(widget.championId, dataset),
+      );
+      final spells = await SummonerSpellService.byIds(plan.spellIds);
+
+      if (!mounted) return;
+      setState(() {
+        summonerSpells = spells;
+        summonerSpellReason = plan.reason;
+      });
+    } catch (_) {
+      // Pas de section de sorts, rien d'autre à signaler à l'utilisateur.
+    }
   }
 
   /// Les conseils sont un bonus : s'ils ne chargent pas, la fiche du champion
@@ -175,17 +206,37 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
                   ).copyWith(height: 1.6),
                 ),
                 const SizedBox(height: 14),
-                ActionLink(
-                  icon: Icons.compare_arrows,
-                  label: 'Comparer avec un autre champion',
-                  semanticLabel: 'Comparer ce champion avec un autre',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ComparePage(initialChampionId: widget.championId),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ActionLink(
+                      icon: Icons.compare_arrows,
+                      label: 'Comparer avec un autre champion',
+                      semanticLabel: 'Comparer ce champion avec un autre',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ComparePage(
+                            initialChampionId: widget.championId,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    ActionLink(
+                      icon: Icons.person_search,
+                      label: 'Qui jouer contre lui ?',
+                      semanticLabel: 'Voir les meilleurs contre-picks',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CountersPage(
+                            initialOpponentId: widget.championId,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 22),
                 Text('Capacités', style: AppTheme.serif(size: 20)),
@@ -211,6 +262,18 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
                   Text('Runes conseillées', style: AppTheme.serif(size: 20)),
                   const SizedBox(height: 10),
                   RunePlanSection(plan: recommendation!.runes),
+                  if (summonerSpells.isNotEmpty) ...[
+                    const SizedBox(height: 28),
+                    Text(
+                      "Sorts d'invocateur",
+                      style: AppTheme.serif(size: 20),
+                    ),
+                    const SizedBox(height: 10),
+                    SummonerSpellSection(
+                      spells: summonerSpells,
+                      reason: summonerSpellReason,
+                    ),
+                  ],
                   const SizedBox(height: 28),
                   Text('Objets conseillés', style: AppTheme.serif(size: 20)),
                   const SizedBox(height: 10),

@@ -15,6 +15,7 @@ import 'widgets/home_greeting/home_greeting.dart';
 import 'widgets/champion_hero_card/champion_hero_card.dart';
 import 'widgets/daily_quiz_card/daily_quiz_card.dart';
 import 'widgets/patch_notes_card/patch_notes_card.dart';
+import 'widgets/tools_section/tools_section.dart';
 import 'widgets/role_scroller/role_scroller.dart';
 import 'widgets/story_list/story_list.dart';
 import 'widgets/favorites_shortcut/favorites_shortcut.dart';
@@ -126,6 +127,13 @@ class _HomePageState extends State<HomePage> {
                 child: PatchNotesCard(notes: patchNotes!),
               ),
             ],
+            const SizedBox(height: 26),
+            const _SectionTitle('Outils'),
+            const SizedBox(height: 11),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: ToolsSection(),
+            ),
             const SizedBox(height: 26),
             _SectionTitle(
               'Par rôle',

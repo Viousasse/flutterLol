@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../champions/models/champion.dart';
+import '../../../matchups/constants/lane_labels.dart';
 import '../../../matchups/models/matchup.dart';
 import '../../../matchups/services/matchup_service.dart';
 import '../../../shared/widgets/remote_image/remote_image.dart';
@@ -8,14 +9,6 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_fonts.dart';
 import '../../../theme/app_theme.dart';
 import '../../champion_detail_page.dart';
-
-const _laneLabels = {
-  'TOP': 'Top',
-  'JUNGLE': 'Jungle',
-  'MIDDLE': 'Mid',
-  'BOTTOM': 'Bot',
-  'UTILITY': 'Support',
-};
 
 /// Adversaires difficiles et favorables d'un champion, comptés sur de vraies
 /// parties classées. Chaque ligne affiche le nombre de parties : c'est ce qui
@@ -141,7 +134,7 @@ class _MatchupRow extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${_laneLabels[matchup.lane] ?? matchup.lane} · '
+                    '${laneLabels[matchup.lane] ?? matchup.lane} · '
                     '${matchup.games} parties',
                     style: AppTheme.mono(size: 8.5, color: AppColors.textMuted),
                   ),
