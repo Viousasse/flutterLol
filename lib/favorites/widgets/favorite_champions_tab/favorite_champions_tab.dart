@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../champions/constants/champion_grid.dart';
 import '../../../champions/models/champion.dart';
 import '../../../champions/services/champion_service.dart';
 import '../../../champions/services/favorites_service.dart';
@@ -85,12 +86,7 @@ class _FavoriteChampionsTabState extends State<FavoriteChampionsTab> {
 
         return GridView.builder(
           padding: const EdgeInsets.all(20),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.82,
-          ),
+          gridDelegate: championGridDelegate,
           itemCount: favoriteChampions.length,
           itemBuilder: (context, index) {
             return ChampionCard(champion: favoriteChampions[index]);

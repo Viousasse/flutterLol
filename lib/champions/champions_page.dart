@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../matchups/services/matchup_service.dart';
 import '../regions/models/lore_region.dart';
 import '../compare/compare_page.dart';
+import 'constants/champion_grid.dart';
 import 'models/champion.dart';
 import 'models/champion_sort.dart';
 import 'services/champion_filter.dart';
@@ -212,12 +213,7 @@ class _ChampionsPageState extends State<ChampionsPage> {
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
       sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.82,
-        ),
+        gridDelegate: championGridDelegate,
         delegate: SliverChildBuilderDelegate(
           (context, index) => ChampionCard(champion: filteredChampions[index]),
           childCount: filteredChampions.length,

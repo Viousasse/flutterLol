@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../items/constants/item_grid.dart';
 import '../../../items/models/item.dart';
 import '../../../items/services/item_favorites_service.dart';
 import '../../../items/services/item_service.dart';
@@ -84,12 +85,7 @@ class _FavoriteItemsTabState extends State<FavoriteItemsTab> {
 
         return GridView.builder(
           padding: const EdgeInsets.all(20),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.66,
-          ),
+          gridDelegate: itemGridDelegate(context),
           itemCount: favoriteItems.length,
           itemBuilder: (context, index) {
             final item = favoriteItems[index];

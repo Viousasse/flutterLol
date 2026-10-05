@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'constants/item_grid.dart';
 import 'models/item.dart';
 import 'models/item_profile.dart';
 import 'services/item_service.dart';
@@ -167,15 +168,7 @@ class _ItemsPageState extends State<ItemsPage> {
               Expanded(
                 child: GridView.builder(
                   padding: const EdgeInsets.only(bottom: 20),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    // Assez haut pour un nom sur deux lignes jusqu'à 360px de
-                    // large, sans quoi la deuxième ligne est rognée.
-                    childAspectRatio: 0.66,
-                  ),
+                  gridDelegate: itemGridDelegate(context),
                   itemCount: filteredItems.length,
                   itemBuilder: (context, index) {
                     final item = filteredItems[index];
