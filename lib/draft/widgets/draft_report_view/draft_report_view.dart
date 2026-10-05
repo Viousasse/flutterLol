@@ -1,0 +1,106 @@
+import 'package:flutter/material.dart';
+
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_theme.dart';
+import '../../models/draft_report.dart';
+import '../criterion_tile/criterion_tile.dart';
+
+/// Le bilan d'une draft terminée : le verdict, la comparaison point par point,
+/// ce qui est bien et ce qu'il faut améliorer.
+class DraftReportView extends StatelessWidget {
+  final DraftReport report;
+
+  const DraftReportView({super.key, required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Verdict(report: report),
+        const SizedBox(height: 22),
+        Text('POURQUOI', style: AppTheme.mono(size: 9)),
+        const SizedBox(height: 8),
+        for (final criterion in report.criteria)
+          CriterionTile(criterion: criterion),
+        if (report.strengths.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text('CE QUI VA BIEN', style: AppTheme.mono(size: 9)),
+          const SizedBox(height: 8),
+          for (final strength in report.strengths) _Bullet(text: strength),
+        ],
+        const SizedBox(height: 12),
+        Text('À AMÉLIORER', style: AppTheme.mono(size: 9)),
+        const SizedBox(height: 8),
+        for (final improvement in report.improvements)
+          _Bullet(text: improvement),
+      ],
+    );
+  }
+}
+
+class _Verdict extends StatelessWidget {
+  final DraftReport report;
+
+  const _Verdict({required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = switch (report.winner) {
+      DraftWinner.blue => 'Votre draft l’emporte',
+      DraftWinner.red => 'La draft du site l’emporte',
+      DraftWinner.tie => 'Drafts équivalentes',
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.accentSoft,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('VERDICT', style: AppTheme.mono(size: 9, color: AppColors.accent)),
+          const SizedBox(height: 6),
+          Text(title, style: AppTheme.serif(size: 22)),
+          const SizedBox(height: 6),
+          Text(
+            report.verdict,
+            style: AppTheme.serif(size: 14, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Bullet extends StatelessWidget {
+  final String text;
+
+  const _Bullet({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 6, right: 10),
+            child: Icon(Icons.circle, size: 6, color: AppColors.accent),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTheme.serif(size: 14, color: AppColors.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

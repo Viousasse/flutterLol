@@ -23,6 +23,9 @@ class AppTheme {
             primary: AppColors.accent,
             secondary: AppColors.accent,
             surface: AppColors.surface,
+            // Sans cela, Material mélange l'accent aux barres et aux feuilles
+            // qui défilent : teinte rosée sur le fond clair.
+            surfaceTint: Colors.transparent,
           ),
       textTheme: baseTextTheme.apply(
         bodyColor: AppColors.textPrimary,
@@ -30,6 +33,7 @@ class AppTheme {
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(

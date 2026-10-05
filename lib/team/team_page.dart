@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import '../champions/models/champion.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
+import '../draft/draft_page.dart';
 import '../shared/errors/user_message.dart';
+import '../shared/widgets/action_link/action_link.dart';
 import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'constants/team_roles.dart';
 import 'models/team_insight.dart';
 import 'models/team_member.dart';
 import 'services/team_analyzer.dart';
@@ -15,8 +18,6 @@ import 'widgets/damage_split_bar/damage_split_bar.dart';
 import 'widgets/insight_tile/insight_tile.dart';
 import 'widgets/team_slot/team_slot.dart';
 
-/// Les cinq rôles d'une équipe, dans l'ordre des voies.
-const teamRoles = ['Top', 'Jungle', 'Milieu', 'Bot', 'Support'];
 
 /// Compose une équipe de cinq champions et dit ce qui lui manque : dégâts
 /// physiques ou magiques, première ligne, contrôle.
@@ -161,6 +162,21 @@ class _TeamPageState extends State<TeamPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 12, 32),
       children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 8, bottom: 14),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: ActionLink(
+              icon: Icons.sports_esports_outlined,
+              label: 'Entraîneur de draft : jouer contre le site',
+              semanticLabel: 'Ouvrir l’entraîneur de draft contre le site',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DraftPage()),
+              ),
+            ),
+          ),
+        ),
         for (var index = 0; index < teamRoles.length; index++)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
