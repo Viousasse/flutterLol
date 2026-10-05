@@ -8,6 +8,7 @@ import '../../team/models/team_member.dart';
 import '../../team/services/team_analyzer.dart';
 import '../models/draft_report.dart';
 import '../models/draft_state.dart';
+import 'ban_analyzer.dart';
 
 /// Compare deux drafts complètes et explique laquelle est meilleure.
 ///
@@ -36,10 +37,21 @@ class DraftEvaluator {
     required MatchupDataset dataset,
     Map<String, String> championNames = const {},
     DraftPlayers? players,
+    List<String> blueBans = const [],
+    List<String> redBans = const [],
   }) {
     final blueAnalysis = TeamAnalyzer.analyze(blue);
     final redAnalysis = TeamAnalyzer.analyze(red);
     final lanes = _laneResults(blue, red, dataset);
+    final bans = BanAnalyzer.analyze(
+      blueBans: blueBans,
+      redBans: redBans,
+      bluePicks: [for (final member in blue) member.champion.id],
+      redPicks: [for (final member in red) member.champion.id],
+      dataset: dataset,
+      names: championNames,
+      players: players,
+    );
 
     final criteria = [
       _damageCriterion(blueAnalysis, redAnalysis, players),
@@ -102,6 +114,10 @@ class DraftEvaluator {
               players: players,
               side: DraftSide.red,
             ),
+      banNotes: bans.blue,
+      // Contre le site, le bilan s'adresse au joueur : les bannissements du
+      // site ne l'intéressent pas.
+      redBanNotes: players == null ? const [] : bans.red,
     );
   }
 

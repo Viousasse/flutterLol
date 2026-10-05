@@ -23,6 +23,16 @@ class DraftHistoryStore {
   static Future<void>? _loading;
   static Future<void> _writeQueue = Future.value();
 
+  /// Remet le stockage dans l'état d'un premier lancement : plus d'historique
+  /// en mémoire, et le prochain accès relira les préférences. Sert aux tests,
+  /// qui rejouent plusieurs fois le chargement dans un même processus.
+  @visibleForTesting
+  static void reset() {
+    _loading = null;
+    _writeQueue = Future.value();
+    records.value = const [];
+  }
+
   static Future<void> ensureLoaded() {
     final loading = _loading;
     if (loading != null) return loading;

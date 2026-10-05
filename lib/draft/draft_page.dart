@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../champions/models/champion.dart';
+import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
 import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
@@ -37,7 +38,24 @@ const _botThinkingDelay = Duration(milliseconds: 900);
 class DraftPage extends StatefulWidget {
   final DraftMode mode;
 
-  const DraftPage({super.key, this.mode = DraftMode.vsSite});
+  /// D'où viennent les champions, les matchups et les fiches : par défaut le
+  /// réseau et le fichier embarqué, remplaçables pour jouer une draft sans
+  /// dépendre d'eux.
+  final Future<List<Champion>> Function() loadChampions;
+  final Future<MatchupDataset> Function() loadDataset;
+  final Future<ChampionDetail> Function(String championId) loadDetail;
+
+  /// Délai avant que le site joue son choix.
+  final Duration botThinkingDelay;
+
+  const DraftPage({
+    super.key,
+    this.mode = DraftMode.vsSite,
+    this.loadChampions = ChampionService.fetchAll,
+    this.loadDataset = MatchupService.load,
+    this.loadDetail = ChampionService.fetchDetail,
+    this.botThinkingDelay = _botThinkingDelay,
+  });
 
   @override
   State<DraftPage> createState() => _DraftPageState();
@@ -78,8 +96,8 @@ class _DraftPageState extends State<DraftPage> {
 
   Future<void> loadData() async {
     try {
-      final championsRequest = ChampionService.fetchAll();
-      final datasetRequest = MatchupService.load();
+      final championsRequest = widget.loadChampions();
+      final datasetRequest = widget.loadDataset();
 
       final loadedChampions = await championsRequest;
       final loadedDataset = await datasetRequest;
@@ -137,7 +155,7 @@ class _DraftPageState extends State<DraftPage> {
     final currentGeneration = generation;
     setState(() => isBotThinking = true);
 
-    await Future<void>.delayed(_botThinkingDelay);
+    await Future<void>.delayed(widget.botThinkingDelay);
     if (!mounted || currentGeneration != generation) return;
 
     if (state.isBanPhase) {
@@ -250,6 +268,8 @@ class _DraftPageState extends State<DraftPage> {
         dataset: dataset,
         championNames: {for (final c in champions) c.id: c.name},
         players: players,
+        blueBans: _ids(state.blueBans),
+        redBans: _ids(state.redBans),
       );
       final saved = DraftRecord.from(
         id: DraftHistoryStore.newId(),
@@ -278,10 +298,14 @@ class _DraftPageState extends State<DraftPage> {
     }
   }
 
+  List<String> _ids(List<Champion?> champions) => [
+    for (final champion in champions) ?champion?.id,
+  ];
+
   Future<List<TeamMember>> _members(DraftSide side) async {
     final team = state.teamOf(side).whereType<Champion>().toList();
     final details = await Future.wait(
-      team.map((champion) => ChampionService.fetchDetail(champion.id)),
+      team.map((champion) => widget.loadDetail(champion.id)),
     );
 
     return [

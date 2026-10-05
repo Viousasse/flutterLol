@@ -57,6 +57,11 @@ class DraftReport {
   final List<String> redStrengths;
   final List<String> redImprovements;
 
+  /// Les remarques sur les bannissements de chaque camp. Vides quand la draft
+  /// s'est jouée sans bannissements.
+  final List<String> banNotes;
+  final List<String> redBanNotes;
+
   const DraftReport({
     required this.criteria,
     required this.blueScore,
@@ -68,5 +73,7 @@ class DraftReport {
     this.players,
     this.redStrengths = const [],
     this.redImprovements = const [],
+    this.banNotes = const [],
+    this.redBanNotes = const [],
   });
 }

@@ -23,6 +23,14 @@ class DraftReportView extends StatelessWidget {
         const SizedBox(height: 8),
         for (final criterion in report.criteria)
           CriterionTile(criterion: criterion, players: report.players),
+        if (report.banNotes.isNotEmpty || report.redBanNotes.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _BanNotes(owner: report.players?.blue, notes: report.banNotes),
+          if (report.players case final players?) ...[
+            const SizedBox(height: 12),
+            _BanNotes(owner: players.red, notes: report.redBanNotes),
+          ],
+        ],
         const SizedBox(height: 12),
         _Advice(
           owner: report.players?.blue,
@@ -37,6 +45,31 @@ class DraftReportView extends StatelessWidget {
             improvements: report.redImprovements,
           ),
         ],
+      ],
+    );
+  }
+}
+
+/// Ce que valent les bannissements d'un camp. En duel, [owner] donne le nom du
+/// joueur concerné ; contre le site, seul le joueur est jugé, sans titre.
+class _BanNotes extends StatelessWidget {
+  final String? owner;
+  final List<String> notes;
+
+  const _BanNotes({required this.owner, required this.notes});
+
+  @override
+  Widget build(BuildContext context) {
+    if (notes.isEmpty) return const SizedBox.shrink();
+
+    final suffix = owner == null ? '' : ' · ${owner!.toUpperCase()}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('BANNISSEMENTS$suffix', style: AppTheme.mono(size: 9)),
+        const SizedBox(height: 8),
+        for (final note in notes) _Bullet(text: note),
       ],
     );
   }
