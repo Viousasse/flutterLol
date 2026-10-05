@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../champions/models/champion.dart';
+import '../builds/build_editor_page.dart';
 import '../compare/compare_page.dart';
+import '../shared/widgets/action_link/action_link.dart';
 import '../shared/widgets/expandable_text/expandable_text.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
@@ -20,6 +22,7 @@ import 'widgets/ability_tile/ability_tile.dart';
 import 'widgets/champion_hero_banner/champion_hero_banner.dart';
 import 'widgets/matchup_section/matchup_section.dart';
 import 'widgets/rune_plan_section/rune_plan_section.dart';
+import 'widgets/skin_gallery/skin_gallery.dart';
 import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
 import '../theme/app_colors.dart';
@@ -172,7 +175,10 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
                   ).copyWith(height: 1.6),
                 ),
                 const SizedBox(height: 14),
-                _CompareLink(
+                ActionLink(
+                  icon: Icons.compare_arrows,
+                  label: 'Comparer avec un autre champion',
+                  semanticLabel: 'Comparer ce champion avec un autre',
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -191,6 +197,15 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
                     ability: entry.value,
                   );
                 }),
+                if (detail!.skins.length > 1) ...[
+                  const SizedBox(height: 22),
+                  Text(
+                    'Apparences (${detail!.skins.length})',
+                    style: AppTheme.serif(size: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  SkinGallery(skins: detail!.skins),
+                ],
                 if (!isLoadingRecommendation && recommendation != null) ...[
                   const SizedBox(height: 14),
                   Text('Runes conseillées', style: AppTheme.serif(size: 20)),
@@ -205,6 +220,23 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
                         .map((item) => ItemStack(item: item, count: 1))
                         .toList(),
                     onSelect: (item) => ItemDetailSheet.show(context, item),
+                  ),
+                  const SizedBox(height: 12),
+                  ActionLink(
+                    icon: Icons.construction,
+                    label: 'Créer une build avec ces objets',
+                    semanticLabel: 'Créer une build avec les objets conseillés',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BuildEditorPage(
+                          initialChampionId: widget.championId,
+                          initialItemIds: recommendedItems
+                              .map((item) => item.id)
+                              .toList(),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
                 if (!isLoadingMatchups) ...[
@@ -221,44 +253,6 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CompareLink extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _CompareLink({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Comparer ce champion avec un autre',
-      excludeSemantics: true,
-      onTap: onTap,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-          decoration: BoxDecoration(
-            color: AppColors.accentSoft,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.compare_arrows, size: 15, color: AppColors.accent),
-              const SizedBox(width: 7),
-              Text(
-                'Comparer avec un autre champion',
-                style: AppTheme.mono(size: 11, color: AppColors.accent),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

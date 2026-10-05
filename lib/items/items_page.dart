@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'models/item.dart';
 import 'models/item_profile.dart';
 import 'services/item_service.dart';
+import 'widgets/builds_button/builds_button.dart';
 import 'widgets/item_card/item_card.dart';
 import 'widgets/items_search_bar/items_search_bar.dart';
 import 'widgets/item_tier_bar/item_tier_bar.dart';
@@ -123,12 +124,19 @@ class _ItemsPageState extends State<ItemsPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text('Objets', style: AppTheme.serif(size: 32)),
-                  ItemSortButton(
-                    current: sort,
-                    onChanged: (s) {
-                      sort = s;
-                      applyFilters();
-                    },
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const BuildsButton(),
+                      const SizedBox(width: 8),
+                      ItemSortButton(
+                        current: sort,
+                        onChanged: (s) {
+                          sort = s;
+                          applyFilters();
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

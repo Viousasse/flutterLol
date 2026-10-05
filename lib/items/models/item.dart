@@ -14,6 +14,11 @@ class Item {
   final List<String> componentIds;
   final List<String> upgradeIds;
 
+  /// Bonus que l'objet apporte, tels que Data Dragon les nomme
+  /// (`FlatPhysicalDamageMod`, `PercentAttackSpeedMod`…). Vide pour un objet
+  /// dont l'effet est entièrement passif.
+  final Map<String, double> stats;
+
   const Item({
     required this.id,
     required this.name,
@@ -25,6 +30,7 @@ class Item {
     required this.profile,
     required this.componentIds,
     required this.upgradeIds,
+    this.stats = const {},
   });
 
   bool get canBeUpgraded => upgradeIds.isNotEmpty;
@@ -50,7 +56,17 @@ class Item {
       ),
       componentIds: componentIds,
       upgradeIds: upgradeIds,
+      stats: _readStats(json['stats']),
     );
+  }
+
+  static Map<String, double> _readStats(dynamic rawStats) {
+    if (rawStats is! Map) return const {};
+
+    return {
+      for (final entry in rawStats.entries)
+        if (entry.value is num) '${entry.key}': (entry.value as num).toDouble(),
+    };
   }
 
   static List<String> _readStringList(dynamic rawValues) {
