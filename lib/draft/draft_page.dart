@@ -6,6 +6,7 @@ import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
+import '../shared/widgets/champion_picker_sheet/champion_role_filter.dart';
 import '../shared/services/clipboard_copy/clipboard_copy.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../team/constants/team_roles.dart';
@@ -166,11 +167,25 @@ class _DraftPageState extends State<DraftPage> {
     });
   }
 
+  /// Le filtre par rôle de la feuille de choix. Pour un choix, il démarre sur le
+  /// rôle de la case touchée ; pour un bannissement, aucun rôle n'est imposé.
+  ChampionRoleFilter _roleFilter({int? roleIndex}) {
+    return ChampionRoleFilter(
+      roles: {
+        for (var index = 0; index < teamRoles.length; index++)
+          teamRoles[index]: teamRoleLanes[index],
+      },
+      fits: bot!.profile.fits,
+      initialLane: roleIndex == null ? null : teamRoleLanes[roleIndex],
+    );
+  }
+
   Future<void> banFor(DraftSide side) async {
     final chosen = await ChampionPickerSheet.show(
       context,
       champions: champions,
       excludedIds: state.unavailableIds,
+      roleFilter: _roleFilter(),
     );
     if (chosen == null || !mounted) return;
     if (!state.isBanPhase || state.nextSide != side) return;
@@ -204,6 +219,7 @@ class _DraftPageState extends State<DraftPage> {
       context,
       champions: champions,
       excludedIds: state.unavailableIds,
+      roleFilter: _roleFilter(roleIndex: roleIndex),
     );
     if (chosen == null || !mounted) return;
     if (state.nextSide != side) return;

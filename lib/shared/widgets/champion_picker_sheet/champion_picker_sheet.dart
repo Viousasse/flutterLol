@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../champions/models/champion.dart';
+import '../app_filter_chip/app_filter_chip.dart';
 import '../remote_image/remote_image.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import 'champion_role_filter.dart';
 
 /// Feuille de choix d'un champion : une recherche et la liste complète.
 class ChampionPickerSheet extends StatefulWidget {
@@ -13,16 +15,22 @@ class ChampionPickerSheet extends StatefulWidget {
   /// d'une équipe) : ils ne sont pas proposés une seconde fois.
   final Set<String> excludedIds;
 
+  /// Quand il est fourni, une rangée de puces permet de ne garder que les
+  /// champions d'un rôle.
+  final ChampionRoleFilter? roleFilter;
+
   const ChampionPickerSheet({
     super.key,
     required this.champions,
     this.excludedIds = const {},
+    this.roleFilter,
   });
 
   static Future<Champion?> show(
     BuildContext context, {
     required List<Champion> champions,
     Set<String> excludedIds = const {},
+    ChampionRoleFilter? roleFilter,
   }) {
     return showModalBottomSheet<Champion>(
       context: context,
@@ -31,8 +39,11 @@ class ChampionPickerSheet extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) =>
-          ChampionPickerSheet(champions: champions, excludedIds: excludedIds),
+      builder: (_) => ChampionPickerSheet(
+        champions: champions,
+        excludedIds: excludedIds,
+        roleFilter: roleFilter,
+      ),
     );
   }
 
@@ -43,14 +54,22 @@ class ChampionPickerSheet extends StatefulWidget {
 class _ChampionPickerSheetState extends State<ChampionPickerSheet> {
   String query = '';
 
+  /// Voie retenue par le filtre de rôle, ou `null` pour tous les champions.
+  late String? lane = widget.roleFilter?.initialLane;
+
   List<Champion> get _matches {
     final lowerCaseQuery = query.toLowerCase();
+    final filter = widget.roleFilter;
+    final selectedLane = lane;
 
     return widget.champions
         .where(
           (champion) =>
               !widget.excludedIds.contains(champion.id) &&
-              champion.name.toLowerCase().contains(lowerCaseQuery),
+              champion.name.toLowerCase().contains(lowerCaseQuery) &&
+              (filter == null ||
+                  selectedLane == null ||
+                  filter.fits(champion.id, selectedLane)),
         )
         .toList();
   }
@@ -81,10 +100,7 @@ class _ChampionPickerSheetState extends State<ChampionPickerSheet> {
               child: TextField(
                 autofocus: true,
                 onChanged: (value) => setState(() => query = value),
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14.5,
-                ),
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 14.5),
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search, size: 18),
                   hintText: 'Rechercher un champion',
@@ -93,6 +109,12 @@ class _ChampionPickerSheetState extends State<ChampionPickerSheet> {
                 ),
               ),
             ),
+            if (widget.roleFilter case final filter?)
+              _RoleChips(
+                filter: filter,
+                selectedLane: lane,
+                onSelect: (value) => setState(() => lane = value),
+              ),
             Expanded(
               child: matches.isEmpty
                   ? Center(
@@ -137,6 +159,46 @@ class _ChampionPickerSheetState extends State<ChampionPickerSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// La rangée de puces des rôles, défilante pour tenir sur un petit écran.
+class _RoleChips extends StatelessWidget {
+  final ChampionRoleFilter filter;
+  final String? selectedLane;
+  final ValueChanged<String?> onSelect;
+
+  const _RoleChips({
+    required this.filter,
+    required this.selectedLane,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+        children: [
+          _chip('Tous', null),
+          for (final entry in filter.roles.entries)
+            _chip(entry.key, entry.value),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(String label, String? lane) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 7),
+      child: AppFilterChip(
+        label: label,
+        selected: selectedLane == lane,
+        onTap: () => onSelect(lane),
       ),
     );
   }
