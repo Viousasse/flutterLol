@@ -9,20 +9,20 @@ import '../../../theme/app_theme.dart';
 class ChampionPickerSheet extends StatefulWidget {
   final List<Champion> champions;
 
-  /// Champion déjà placé de l'autre côté : le comparer à lui-même n'a pas de
-  /// sens, il n'est donc pas proposé.
-  final String? excludedId;
+  /// Champions déjà placés ailleurs (l'autre côté d'une comparaison, le reste
+  /// d'une équipe) : ils ne sont pas proposés une seconde fois.
+  final Set<String> excludedIds;
 
   const ChampionPickerSheet({
     super.key,
     required this.champions,
-    this.excludedId,
+    this.excludedIds = const {},
   });
 
   static Future<Champion?> show(
     BuildContext context, {
     required List<Champion> champions,
-    String? excludedId,
+    Set<String> excludedIds = const {},
   }) {
     return showModalBottomSheet<Champion>(
       context: context,
@@ -32,7 +32,7 @@ class ChampionPickerSheet extends StatefulWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) =>
-          ChampionPickerSheet(champions: champions, excludedId: excludedId),
+          ChampionPickerSheet(champions: champions, excludedIds: excludedIds),
     );
   }
 
@@ -49,7 +49,7 @@ class _ChampionPickerSheetState extends State<ChampionPickerSheet> {
     return widget.champions
         .where(
           (champion) =>
-              champion.id != widget.excludedId &&
+              !widget.excludedIds.contains(champion.id) &&
               champion.name.toLowerCase().contains(lowerCaseQuery),
         )
         .toList();

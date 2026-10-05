@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../builds/services/build_store.dart';
 import '../champions/models/champion.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
@@ -8,6 +9,7 @@ import '../items/services/item_service.dart';
 import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
 import '../shared/errors/user_message.dart';
+import '../shared/widgets/action_link/action_link.dart';
 import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../shared/widgets/item_picker_sheet/item_picker_sheet.dart';
@@ -19,6 +21,7 @@ import 'widgets/compare_item_slots/compare_item_slots.dart';
 import 'widgets/compare_level_slider/compare_level_slider.dart';
 import 'widgets/compare_slot/compare_slot.dart';
 import 'widgets/head_to_head_card/head_to_head_card.dart';
+import 'widgets/saved_build_picker_sheet/saved_build_picker_sheet.dart';
 import 'widgets/stat_compare_row/stat_compare_row.dart';
 
 /// Deux champions côte à côte, à un niveau et avec les objets de son choix, plus
@@ -110,7 +113,7 @@ class _ComparePageState extends State<ComparePage> {
     final chosen = await ChampionPickerSheet.show(
       context,
       champions: champions,
-      excludedId: other?.id,
+      excludedIds: {?other?.id},
     );
     if (chosen == null || !mounted) return;
 
@@ -152,6 +155,45 @@ class _ComparePageState extends State<ComparePage> {
         rightItems = [...rightItems, item];
       }
     });
+  }
+
+  /// Équipe au champion les objets d'une build enregistrée, en remplaçant ceux
+  /// qu'il avait. Un objet que Riot a retiré depuis est ignoré.
+  Future<void> loadSavedBuild({required bool isLeft}) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      await BuildStore.ensureLoaded();
+      final builds = BuildStore.builds.value;
+
+      if (builds.isEmpty) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Aucune build enregistrée. Créez-en une depuis l'onglet Objets.",
+            ),
+          ),
+        );
+        return;
+      }
+      if (!mounted) return;
+
+      final chosen = await SavedBuildPickerSheet.show(context, builds: builds);
+      if (chosen == null || !mounted) return;
+
+      final items = await ItemService.byIds(chosen.itemIds);
+      if (!mounted) return;
+
+      setState(() {
+        if (isLeft) {
+          leftItems = items;
+        } else {
+          rightItems = items;
+        }
+      });
+    } catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+    }
   }
 
   void removeItem({required bool isLeft, required int index}) {
@@ -257,6 +299,13 @@ class _ComparePageState extends State<ComparePage> {
             items: items,
             onAdd: () => addItem(isLeft: isLeft),
             onRemoveAt: (index) => removeItem(isLeft: isLeft, index: index),
+          ),
+          const SizedBox(height: 8),
+          ActionLink(
+            icon: Icons.folder_open,
+            label: 'Charger une build',
+            semanticLabel: 'Équiper une build enregistrée',
+            onTap: () => loadSavedBuild(isLeft: isLeft),
           ),
         ],
       ],
