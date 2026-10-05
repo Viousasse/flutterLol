@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../champions/models/champion.dart';
-import '../../../shared/widgets/remote_image/remote_image.dart';
+import '../remote_image/remote_image.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../models/counter_pick.dart';
+import '../../../counters/models/counter_pick.dart';
 
 const _winningColor = Color(0xFF6FBF73);
+
+/// Teinte d'avertissement des bilans fondés sur peu de parties.
+const _cautionColor = Color(0xFFD08A1E);
 
 /// Une proposition de contre-pick : le champion, son taux de victoire face à
 /// l'adversaire et le nombre de parties qui le fondent.
@@ -32,7 +35,9 @@ class CounterTile extends StatelessWidget {
     return Semantics(
       button: true,
       label:
-          '${champion.name}, $percent % de victoires sur ${pick.games} parties',
+          '${champion.name}, $percent % de victoires sur ${pick.games} '
+          '${pick.games > 1 ? 'parties' : 'partie'}'
+          '${pick.isReliable ? '' : ', peu de données'}',
       excludeSemantics: true,
       onTap: onTap,
       child: GestureDetector(
@@ -69,10 +74,16 @@ class CounterTile extends StatelessWidget {
                   children: [
                     Text(champion.name, style: AppTheme.serif(size: 16)),
                     Text(
-                      '${pick.games} parties',
+                      pick.isReliable
+                          ? '${pick.games} parties'
+                          : '${pick.games} '
+                                '${pick.games > 1 ? 'parties' : 'partie'} · '
+                                'peu de données',
                       style: AppTheme.mono(
                         size: 10,
-                        color: AppColors.textMuted,
+                        color: pick.isReliable
+                            ? AppColors.textMuted
+                            : _cautionColor,
                       ),
                     ),
                   ],

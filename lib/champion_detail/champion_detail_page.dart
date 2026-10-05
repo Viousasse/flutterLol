@@ -4,6 +4,7 @@ import '../champions/models/champion.dart';
 import '../builds/build_editor_page.dart';
 import '../compare/compare_page.dart';
 import '../counters/counters_page.dart';
+import '../strengths/strengths_page.dart';
 import '../shared/widgets/action_link/action_link.dart';
 import '../shared/widgets/expandable_text/expandable_text.dart';
 import '../champions/models/champion_detail.dart';
@@ -218,6 +219,19 @@ class _ChampionDetailPageState extends State<ChampionDetailPage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => ComparePage(
+                            initialChampionId: widget.championId,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ActionLink(
+                      icon: Icons.military_tech,
+                      label: 'Contre qui est-il fort ?',
+                      semanticLabel: 'Voir contre qui ce champion est fort',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => StrengthsPage(
                             initialChampionId: widget.championId,
                           ),
                         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../matchups/constants/lane_labels.dart';
-import '../../../shared/widgets/app_filter_chip/app_filter_chip.dart';
+import '../app_filter_chip/app_filter_chip.dart';
 
 /// Choix de la voie : « Toutes » additionne les voies, les autres puces
 /// restreignent la liste à une seule.

@@ -447,7 +447,12 @@ class _LaneResult {
     final base =
         '$role : ${blue.name} ne gagne que $rate % contre ${red.name}.';
 
-    final better = CounterService.counters(red.id, dataset, lane: lane)
+    final better = CounterService.counters(
+          red.id,
+          dataset,
+          lane: lane,
+          includeLowConfidence: false,
+        )
         .where((pick) => !taken.contains(pick.championId) && pick.winRate > 0.5)
         .firstOrNull;
     if (better == null) return '$base Essayez un autre choix à ce poste.';

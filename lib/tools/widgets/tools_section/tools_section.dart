@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../builds/builds_page.dart';
 import '../../../compare/compare_page.dart';
 import '../../../counters/counters_page.dart';
+import '../../../strengths/strengths_page.dart';
 import '../../../team/team_page.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -27,6 +28,12 @@ final _tools = <_Tool>[
     label: 'Contre-picks',
     hint: 'Qui jouer contre lui ?',
     page: (context) => const CountersPage(),
+  ),
+  _Tool(
+    icon: Icons.military_tech,
+    label: 'Points forts',
+    hint: 'Contre qui je suis fort ?',
+    page: (context) => const StrengthsPage(),
   ),
   _Tool(
     icon: Icons.groups_outlined,

@@ -3,35 +3,35 @@ import 'package:flutter/material.dart';
 import '../champion_detail/champion_detail_page.dart';
 import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
+import '../counters/models/counter_pick.dart';
+import '../counters/services/counter_service.dart';
 import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
 import '../shared/errors/user_message.dart';
 import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
+import '../shared/widgets/counter_tile/counter_tile.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
+import '../shared/widgets/lane_filter_bar/lane_filter_bar.dart';
 import '../shared/widgets/remote_image/remote_image.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
-import 'models/counter_pick.dart';
-import 'services/counter_service.dart';
-import '../shared/widgets/counter_tile/counter_tile.dart';
-import '../shared/widgets/lane_filter_bar/lane_filter_bar.dart';
 
-/// « Je joue contre ce champion, qui choisir ? » : les champions qui le battent
-/// le plus souvent dans les parties classées Master+ analysées.
-class CountersPage extends StatefulWidget {
-  /// Adversaire déjà choisi, quand on arrive depuis sa fiche.
-  final String? initialOpponentId;
+/// « Je joue ce champion : contre qui est-il fort, et contre qui souffre-t-il ? »
+/// d'après les parties classées Master+ analysées.
+class StrengthsPage extends StatefulWidget {
+  /// Champion déjà choisi, quand on arrive depuis sa fiche.
+  final String? initialChampionId;
 
-  const CountersPage({super.key, this.initialOpponentId});
+  const StrengthsPage({super.key, this.initialChampionId});
 
   @override
-  State<CountersPage> createState() => _CountersPageState();
+  State<StrengthsPage> createState() => _StrengthsPageState();
 }
 
-class _CountersPageState extends State<CountersPage> {
+class _StrengthsPageState extends State<StrengthsPage> {
   List<Champion> champions = const [];
   MatchupDataset dataset = const MatchupDataset.empty();
-  Champion? opponent;
+  Champion? mine;
   String? lane;
 
   bool isLoading = true;
@@ -55,7 +55,7 @@ class _CountersPageState extends State<CountersPage> {
       setState(() {
         champions = loadedChampions;
         dataset = loadedDataset;
-        opponent = _find(widget.initialOpponentId);
+        mine = _find(widget.initialChampionId);
         isLoading = false;
       });
     } catch (error) {
@@ -83,18 +83,18 @@ class _CountersPageState extends State<CountersPage> {
     loadData();
   }
 
-  Future<void> pickOpponent() async {
+  Future<void> pickChampion() async {
     final chosen = await ChampionPickerSheet.show(
       context,
       champions: champions,
-      excludedIds: {?opponent?.id},
+      excludedIds: {?mine?.id},
     );
     if (chosen == null || !mounted) return;
 
-    // La voie choisie pour l'adversaire précédent n'a peut-être pas de données
-    // pour le nouveau : on repart de toutes les voies.
+    // La voie choisie pour l'ancien champion n'a peut-être pas de données pour
+    // le nouveau : on repart de toutes les voies.
     setState(() {
-      opponent = chosen;
+      mine = chosen;
       lane = null;
     });
   }
@@ -112,7 +112,7 @@ class _CountersPageState extends State<CountersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Contre-picks', style: AppTheme.serif(size: 24)),
+        title: Text('Points forts', style: AppTheme.serif(size: 24)),
       ),
       body: _buildBody(),
     );
@@ -131,7 +131,7 @@ class _CountersPageState extends State<CountersPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
-        _OpponentPicker(opponent: opponent, onTap: pickOpponent),
+        _ChampionPicker(champion: mine, onTap: pickChampion),
         const SizedBox(height: 18),
         ..._results(),
       ],
@@ -139,13 +139,13 @@ class _CountersPageState extends State<CountersPage> {
   }
 
   List<Widget> _results() {
-    final target = opponent;
+    final champion = mine;
 
-    if (target == null) {
+    if (champion == null) {
       return [
         Text(
-          'Choisissez le champion que vous allez affronter pour voir qui le '
-          'bat le plus souvent.',
+          'Choisissez votre champion pour voir contre qui il est fort, et '
+          'contre qui il a du mal.',
           style: AppTheme.serif(size: 14, color: AppColors.textMuted),
         ),
       ];
@@ -160,8 +160,24 @@ class _CountersPageState extends State<CountersPage> {
       ];
     }
 
-    final lanes = CounterService.lanesFor(target.id, dataset);
-    final picks = CounterService.counters(target.id, dataset, lane: lane);
+    final lanes = CounterService.lanesPlayedBy(champion.id, dataset);
+    final strong = CounterService.strongAgainst(
+      champion.id,
+      dataset,
+      lane: lane,
+    );
+    final weak = CounterService.weakAgainst(champion.id, dataset, lane: lane);
+
+    if (strong.isEmpty && weak.isEmpty) {
+      return [
+        Text(
+          'Aucune partie Master+ analysée avec ${champion.name}'
+          '${lane == null ? '' : ' dans cette voie'} : essayez une autre voie '
+          'ou un autre champion.',
+          style: AppTheme.serif(size: 14, color: AppColors.textMuted),
+        ),
+      ];
+    }
 
     return [
       if (lanes.length > 1) ...[
@@ -172,66 +188,64 @@ class _CountersPageState extends State<CountersPage> {
         ),
         const SizedBox(height: 16),
       ],
-      if (picks.isEmpty)
-        Text(
-          'Aucune partie Master+ analysée contre ${target.name}'
-          '${lane == null ? '' : ' dans cette voie'} : essayez une autre voie '
-          'ou un autre champion.',
-          style: AppTheme.serif(size: 14, color: AppColors.textMuted),
-        )
-      else ...[
-        Text('MEILLEURS CHOIX', style: AppTheme.mono(size: 9)),
+      if (strong.isNotEmpty) ...[
+        Text('FORT CONTRE', style: AppTheme.mono(size: 9)),
         const SizedBox(height: 8),
-        for (var index = 0; index < picks.length; index++)
-          _tile(picks[index], index + 1),
-        const SizedBox(height: 10),
-        if (picks.any((pick) => !pick.isReliable)) ...[
-          Text(
-            'Peu de parties Master+ contre ${target.name} : les propositions '
-            'marquées « peu de données » sont indicatives, classées avec '
-            'prudence.',
-            style: AppTheme.serif(size: 13, color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 10),
-        ],
-        Text(
-          'Parties classées Master+ du patch ${dataset.patch ?? '?'}, '
-          '${dataset.matches} parties analysées. Le pourcentage est celui du '
-          'champion proposé face à ${target.name}.',
-          style: AppTheme.mono(size: 9, color: AppColors.textMuted),
-        ),
+        ..._tiles(strong),
       ],
+      if (weak.isNotEmpty) ...[
+        const SizedBox(height: 14),
+        Text('DIFFICILE CONTRE', style: AppTheme.mono(size: 9)),
+        const SizedBox(height: 8),
+        ..._tiles(weak),
+      ],
+      const SizedBox(height: 10),
+      if (strong.any((pick) => !pick.isReliable)) ...[
+        Text(
+          'Peu de parties Master+ avec ${champion.name} : les adversaires '
+          'marqués « peu de données » sont indicatifs, classés avec prudence.',
+          style: AppTheme.serif(size: 13, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 10),
+      ],
+      Text(
+        'Parties classées Master+ du patch ${dataset.patch ?? '?'}, '
+        '${dataset.matches} parties analysées. Le pourcentage est celui de '
+        '${champion.name} face à chaque adversaire.',
+        style: AppTheme.mono(size: 9, color: AppColors.textMuted),
+      ),
     ];
   }
 
-  Widget _tile(CounterPick pick, int rank) {
-    final champion = _find(pick.championId);
-    if (champion == null) return const SizedBox.shrink();
-
-    return CounterTile(
-      pick: pick,
-      champion: champion,
-      rank: rank,
-      onTap: () => openChampion(champion),
-    );
+  List<Widget> _tiles(List<CounterPick> picks) {
+    return [
+      for (var index = 0; index < picks.length; index++)
+        if (_find(picks[index].championId) case final opponent?)
+          CounterTile(
+            pick: picks[index],
+            champion: opponent,
+            rank: index + 1,
+            onTap: () => openChampion(opponent),
+          ),
+    ];
   }
 }
 
-class _OpponentPicker extends StatelessWidget {
-  final Champion? opponent;
+class _ChampionPicker extends StatelessWidget {
+  final Champion? champion;
   final VoidCallback onTap;
 
-  const _OpponentPicker({required this.opponent, required this.onTap});
+  const _ChampionPicker({required this.champion, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final selected = opponent;
+    final selected = champion;
 
     return Semantics(
       button: true,
       label: selected == null
-          ? "Choisir le champion à affronter"
-          : 'Adversaire : ${selected.name}, appuyer pour changer',
+          ? 'Choisir votre champion'
+          : 'Votre champion : ${selected.name}, appuyer pour changer',
       excludeSemantics: true,
       onTap: onTap,
       child: GestureDetector(
@@ -255,23 +269,19 @@ class _OpponentPicker extends StatelessWidget {
                   ),
                 )
               else
-                Icon(
-                  Icons.person_search,
-                  size: 32,
-                  color: AppColors.accent,
-                ),
+                Icon(Icons.military_tech, size: 32, color: AppColors.accent),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'JE JOUE CONTRE',
+                      'JE JOUE',
                       style: AppTheme.mono(size: 9, color: AppColors.textMuted),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      selected?.name ?? 'Choisir un champion',
+                      selected?.name ?? 'Choisir mon champion',
                       style: AppTheme.serif(size: 20),
                     ),
                   ],
