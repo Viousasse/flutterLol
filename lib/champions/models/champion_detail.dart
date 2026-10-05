@@ -1,3 +1,4 @@
+import 'champion_skin.dart';
 import 'champion_stats.dart';
 
 class ChampionAbility {
@@ -21,6 +22,7 @@ class ChampionDetail {
   final ChampionAbility passive;
   final List<ChampionAbility> spells;
   final ChampionStats stats;
+  final List<ChampionSkin> skins;
 
   ChampionDetail({
     required this.id,
@@ -31,6 +33,7 @@ class ChampionDetail {
     required this.passive,
     required this.spells,
     this.stats = const ChampionStats.empty(),
+    this.skins = const [],
   });
 
   factory ChampionDetail.fromJson(Map<String, dynamic> json, String version) {
@@ -63,6 +66,7 @@ class ChampionDetail {
         json['stats'] as Map<String, dynamic>?,
         json['info'] as Map<String, dynamic>?,
       ),
+      skins: ChampionSkin.listFromJson(json['id'], json['skins']),
     );
   }
 
