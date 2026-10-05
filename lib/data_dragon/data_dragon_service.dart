@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'data_dragon_exception.dart';
+import 'offline_json_cache.dart';
 
 class DataDragonService {
   static const _baseUrl = 'https://ddragon.leagueoflegends.com';
@@ -29,7 +30,12 @@ class DataDragonService {
 
   static Future<String> _fetchLatestVersion() async {
     try {
-      final versions = await fetchJson('$_baseUrl/api/versions.json') as List;
+      final versions =
+          await fetchJson(
+                '$_baseUrl/api/versions.json',
+                offlineKey: 'versions',
+              )
+              as List;
       if (versions.isEmpty) {
         throw const DataDragonException('Aucune version de jeu publiée.');
       }
@@ -47,7 +53,36 @@ class DataDragonService {
   ///
   /// Toute panne — réseau coupé, CDN en erreur, corps illisible — ressort en
   /// [DataDragonException] portant un message affichable.
-  static Future<dynamic> fetchJson(String url) async {
+  ///
+  /// Avec un [offlineKey], le dernier document reçu est gardé sur l'appareil et
+  /// resservi quand Riot est injoignable : l'application s'ouvre alors sans
+  /// connexion, avec les données du dernier lancement réussi.
+  static Future<dynamic> fetchJson(String url, {String? offlineKey}) async {
+    try {
+      final body = await _download(url);
+      final decoded = _decode(body);
+
+      // La copie n'est écrite qu'une fois le document décodé : un corps
+      // illisible ne doit pas écraser la dernière bonne version.
+      if (offlineKey != null) await OfflineJsonCache.write(offlineKey, body);
+
+      return decoded;
+    } on DataDragonException {
+      if (offlineKey == null) rethrow;
+
+      final saved = await OfflineJsonCache.read(offlineKey);
+      if (saved == null) rethrow;
+
+      try {
+        return jsonDecode(saved);
+      } on FormatException {
+        // Copie corrompue : on remonte la vraie panne réseau, pas celle-ci.
+        rethrow;
+      }
+    }
+  }
+
+  static Future<String> _download(String url) async {
     final http.Response response;
 
     try {
@@ -68,8 +103,12 @@ class DataDragonService {
       );
     }
 
+    return response.body;
+  }
+
+  static dynamic _decode(String body) {
     try {
-      return jsonDecode(response.body);
+      return jsonDecode(body);
     } on FormatException {
       throw const DataDragonException('Réponse illisible du serveur de Riot.');
     }

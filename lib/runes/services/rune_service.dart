@@ -35,6 +35,7 @@ class RuneService {
     final version = await DataDragonService.latestVersion();
     final response = await DataDragonService.fetchJson(
       DataDragonService.dataUrl(version, 'runesReforged.json'),
+      offlineKey: 'runes',
     );
     final trees = (response as List)
         .map((json) => RuneTree.fromJson(json))

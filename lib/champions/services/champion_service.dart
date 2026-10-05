@@ -27,6 +27,7 @@ class ChampionService {
       final version = await DataDragonService.latestVersion();
       final data = await DataDragonService.fetchJson(
         DataDragonService.dataUrl(version, 'champion.json'),
+        offlineKey: 'champions',
       );
       final championsMap = data['data'] as Map<String, dynamic>;
 

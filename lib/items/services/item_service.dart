@@ -32,6 +32,7 @@ class ItemService {
 
       final data = await DataDragonService.fetchJson(
         DataDragonService.dataUrl(version, 'item.json'),
+        offlineKey: 'items',
       );
       final itemsMap = data['data'] as Map<String, dynamic>;
 
