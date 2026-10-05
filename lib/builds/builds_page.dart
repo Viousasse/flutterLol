@@ -5,11 +5,13 @@ import '../champions/services/champion_service.dart';
 import '../items/models/item.dart';
 import '../items/services/item_service.dart';
 import '../shared/errors/user_message.dart';
+import '../shared/services/clipboard_copy/clipboard_copy.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'build_editor_page.dart';
 import 'models/build.dart';
+import 'services/build_share_text.dart';
 import 'services/build_store.dart';
 import 'widgets/build_tile/build_tile.dart';
 
@@ -170,6 +172,11 @@ class _BuildsPageState extends State<BuildsPage> {
               championName: _championNameOf(build),
               onTap: () => openEditor(build: build),
               onDelete: () => confirmDelete(build),
+              onShare: () => copyToClipboard(
+                context,
+                BuildShareText.of(build, _itemsOf(build), _championNameOf(build)),
+                message: 'Résumé de la build copié',
+              ),
             );
           },
         );

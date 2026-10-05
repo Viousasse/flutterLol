@@ -68,7 +68,7 @@ class DraftBot {
     final roleIndex = roles[random.nextInt(roles.length)];
 
     final available = pool
-        .where((champion) => !state.pickedIds.contains(champion.id))
+        .where((champion) => !state.unavailableIds.contains(champion.id))
         .toList();
     final lane = teamRoleLanes[roleIndex];
 
@@ -91,6 +91,49 @@ class DraftBot {
     final picked = shortlist[random.nextInt(shortlist.length)].$1;
 
     return DraftChoice(roleIndex: roleIndex, champion: picked);
+  }
+
+  /// Nombre de champions parmi lesquels le site tire son bannissement.
+  static const banShortlistSize = 4;
+
+  /// Poids du nombre de parties dans le score de bannissement : un champion
+  /// très joué est une menace plus probable qu'un champion rare.
+  static const banPopularityWeight = 4.0;
+
+  /// Bannit un champion libre : de préférence un de ceux qui gagnent souvent
+  /// et qu'on croise souvent, car ce sont ceux qu'un adversaire reprendra.
+  Champion chooseBan({
+    required DraftState state,
+    required List<Champion> pool,
+  }) {
+    final available = pool
+        .where((champion) => !state.unavailableIds.contains(champion.id))
+        .toList();
+
+    final records = {
+      for (final champion in available)
+        champion.id: MatchupService.overallFor(champion.id, dataset),
+    };
+    final mostGames = records.values.fold(
+      1,
+      (most, record) => max(most, record.games),
+    );
+
+    final scored = [
+      for (final champion in available)
+        (champion, _banScore(records[champion.id]!, mostGames)),
+    ]..sort((a, b) => b.$2.compareTo(a.$2));
+
+    final shortlist = scored.take(banShortlistSize).toList();
+
+    return shortlist[random.nextInt(shortlist.length)].$1;
+  }
+
+  double _banScore(OverallRecord record, int mostGames) {
+    var score = random.nextDouble() * jitter;
+    if (record.isReliable) score += (record.winRate - 0.5) * winRateWeight;
+
+    return score + record.games / mostGames * banPopularityWeight;
   }
 
   double _score(

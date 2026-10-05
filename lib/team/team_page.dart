@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../champions/models/champion.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
+import '../draft/draft_history_page.dart';
 import '../draft/draft_page.dart';
 import '../draft/models/draft_mode.dart';
 import '../shared/errors/user_message.dart';
@@ -183,6 +184,17 @@ class _TeamPageState extends State<TeamPage> {
                   MaterialPageRoute(
                     builder: (context) =>
                         const DraftPage(mode: DraftMode.vsFriend),
+                  ),
+                ),
+              ),
+              ActionLink(
+                icon: Icons.history,
+                label: 'Historique des drafts',
+                semanticLabel: 'Ouvrir l’historique des drafts jouées',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DraftHistoryPage(),
                   ),
                 ),
               ),

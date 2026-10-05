@@ -17,6 +17,7 @@ class BuildTile extends StatelessWidget {
   final String? championName;
   final VoidCallback onTap;
   final VoidCallback onDelete;
+  final VoidCallback onShare;
 
   const BuildTile({
     super.key,
@@ -25,6 +26,7 @@ class BuildTile extends StatelessWidget {
     required this.championName,
     required this.onTap,
     required this.onDelete,
+    required this.onShare,
   });
 
   @override
@@ -77,6 +79,15 @@ class BuildTile extends StatelessWidget {
                       ],
                     ),
                   ],
+                ),
+              ),
+              IconButton(
+                tooltip: 'Copier le résumé de la build ${savedBuild.name}',
+                onPressed: onShare,
+                icon: Icon(
+                  Icons.share_outlined,
+                  size: 20,
+                  color: AppColors.textMuted,
                 ),
               ),
               IconButton(
