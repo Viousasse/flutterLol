@@ -173,7 +173,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: AppFonts.sans,
         fontSize: 13,
         fontWeight: FontWeight.w600,

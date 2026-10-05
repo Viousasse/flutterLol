@@ -69,7 +69,7 @@ class PatchNotesCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Icon(Icons.open_in_new, size: 18, color: AppColors.accent),
+              Icon(Icons.open_in_new, size: 18, color: AppColors.accent),
             ],
           ),
         ),

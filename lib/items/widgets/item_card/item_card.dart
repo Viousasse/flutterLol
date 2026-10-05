@@ -58,7 +58,7 @@ class ItemCard extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(Icons.circle, size: 8, color: AppColors.accent),
+                Icon(Icons.circle, size: 8, color: AppColors.accent),
                 const SizedBox(width: 5),
                 Text(
                   '${item.gold}',
@@ -68,7 +68,7 @@ class ItemCard extends StatelessWidget {
                 ValueListenableBuilder<Set<String>>(
                   valueListenable: ItemFavoritesService.favorites,
                   builder: (context, favorites, _) => favorites.contains(item.id)
-                      ? const Icon(Icons.star, size: 13, color: AppColors.accent)
+                      ? Icon(Icons.star, size: 13, color: AppColors.accent)
                       : const SizedBox.shrink(),
                 ),
               ],
@@ -92,7 +92,7 @@ class _MissingIcon extends StatelessWidget {
       height: 56,
       alignment: Alignment.center,
       color: AppColors.background,
-      child: const Icon(
+      child: Icon(
         Icons.hide_image_outlined,
         size: 20,
         color: AppColors.textMuted,

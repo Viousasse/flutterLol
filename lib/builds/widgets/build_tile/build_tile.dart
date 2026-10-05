@@ -82,7 +82,7 @@ class BuildTile extends StatelessWidget {
               IconButton(
                 tooltip: 'Supprimer la build ${savedBuild.name}',
                 onPressed: onDelete,
-                icon: const Icon(
+                icon: Icon(
                   Icons.delete_outline,
                   size: 20,
                   color: AppColors.textMuted,

@@ -265,7 +265,7 @@ class _ComparePageState extends State<ComparePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: _column(isLeft: true)),
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(left: 10, right: 10, top: 80),
               child: Text('VS', style: TextStyle(color: AppColors.accent)),
             ),

@@ -162,7 +162,7 @@ class _NextButton extends StatelessWidget {
         ),
         child: Text(
           'Question suivante',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppFonts.sans,
             fontSize: 13.5,
             fontWeight: FontWeight.w600,

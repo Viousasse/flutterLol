@@ -246,7 +246,7 @@ class _OpponentPicker extends StatelessWidget {
                   ),
                 )
               else
-                const Icon(
+                Icon(
                   Icons.person_search,
                   size: 32,
                   color: AppColors.accent,
@@ -268,7 +268,7 @@ class _OpponentPicker extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.expand_more, color: AppColors.textMuted),
+              Icon(Icons.expand_more, color: AppColors.textMuted),
             ],
           ),
         ),

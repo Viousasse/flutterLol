@@ -196,7 +196,7 @@ class _BuildEditorPageState extends State<BuildEditorPage> {
           controller: nameController,
           maxLength: 40,
           style: AppTheme.serif(size: 18),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: _defaultName,
             hintStyle: TextStyle(color: AppColors.textMuted),
             labelText: 'Nom de la build',
@@ -287,7 +287,7 @@ class _ChampionRow extends StatelessWidget {
                         ),
                       )
                     else
-                      const Icon(
+                      Icon(
                         Icons.person_add_alt,
                         color: AppColors.accent,
                         size: 22,
@@ -312,7 +312,7 @@ class _ChampionRow extends StatelessWidget {
           IconButton(
             tooltip: 'Retirer le champion',
             onPressed: onClear,
-            icon: const Icon(Icons.close, size: 18, color: AppColors.textMuted),
+            icon: Icon(Icons.close, size: 18, color: AppColors.textMuted),
           ),
       ],
     );

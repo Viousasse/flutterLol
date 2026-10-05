@@ -81,11 +81,11 @@ class _ChampionPickerSheetState extends State<ChampionPickerSheet> {
               child: TextField(
                 autofocus: true,
                 onChanged: (value) => setState(() => query = value),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14.5,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search, size: 18),
                   hintText: 'Rechercher un champion',
                   hintStyle: TextStyle(color: AppColors.textMuted),

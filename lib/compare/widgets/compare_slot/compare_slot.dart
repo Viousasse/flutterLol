@@ -62,7 +62,7 @@ class _Empty extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.add_circle_outline, color: AppColors.accent, size: 28),
+        Icon(Icons.add_circle_outline, color: AppColors.accent, size: 28),
         const SizedBox(height: 8),
         Text(
           label,

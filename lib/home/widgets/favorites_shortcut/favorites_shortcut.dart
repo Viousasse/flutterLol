@@ -35,7 +35,7 @@ class FavoritesShortcut extends StatelessWidget {
                 color: AppColors.textPrimary,
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textMuted),
+            Icon(Icons.chevron_right, color: AppColors.textMuted),
           ],
         ),
       ),

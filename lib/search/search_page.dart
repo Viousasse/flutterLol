@@ -74,8 +74,8 @@ class _SearchPageState extends State<SearchPage> {
         title: TextField(
           autofocus: true,
           onChanged: (value) => setState(() => query = value),
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
-          decoration: const InputDecoration(
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+          decoration: InputDecoration(
             hintText: 'Champion ou objet',
             hintStyle: TextStyle(color: AppColors.textMuted),
             border: InputBorder.none,

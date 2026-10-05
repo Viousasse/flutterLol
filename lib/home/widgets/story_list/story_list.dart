@@ -36,7 +36,7 @@ class StoryList extends StatelessWidget {
                   horizontal: 15,
                   vertical: 14,
                 ),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(
                     left: BorderSide(color: AppColors.accent, width: 2),
                   ),

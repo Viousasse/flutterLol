@@ -164,7 +164,7 @@ class _FinalItemNotice extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(
+        Icon(
           Icons.check_circle_outline,
           size: 14,
           color: AppColors.textMuted,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../champions/models/champion_skin.dart';
 import '../shared/widgets/remote_image/remote_image.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
 /// Les apparences d'un champion en plein écran : on glisse ou on appuie sur les
@@ -54,9 +53,10 @@ class _SkinViewerPageState extends State<SkinViewerPage> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
         title: Text(
           '${currentIndex + 1} / ${widget.skins.length}',
-          style: AppTheme.mono(size: 12, color: AppColors.textSecondary),
+          style: AppTheme.mono(size: 12, color: Colors.white70),
         ),
       ),
       extendBodyBehindAppBar: true,
@@ -83,7 +83,7 @@ class _SkinViewerPageState extends State<SkinViewerPage> {
               child: IconButton(
                 tooltip: 'Apparence précédente',
                 onPressed: () => _go(-1),
-                icon: const Icon(Icons.chevron_left, size: 32),
+                icon: const Icon(Icons.chevron_left, size: 32, color: Colors.white),
               ),
             ),
           if (_hasNext)
@@ -92,7 +92,7 @@ class _SkinViewerPageState extends State<SkinViewerPage> {
               child: IconButton(
                 tooltip: 'Apparence suivante',
                 onPressed: () => _go(1),
-                icon: const Icon(Icons.chevron_right, size: 32),
+                icon: const Icon(Icons.chevron_right, size: 32, color: Colors.white),
               ),
             ),
           Positioned(
@@ -102,7 +102,7 @@ class _SkinViewerPageState extends State<SkinViewerPage> {
             child: Text(
               skin.name,
               textAlign: TextAlign.center,
-              style: AppTheme.serif(size: 22),
+              style: AppTheme.serif(size: 22, color: Colors.white),
             ),
           ),
         ],

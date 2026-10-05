@@ -126,7 +126,7 @@ class _MatchupRow extends StatelessWidget {
                 children: [
                   Text(
                     target?.name ?? matchup.opponentId,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: AppFonts.sans,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

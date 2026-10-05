@@ -70,7 +70,7 @@ class TeamSlot extends StatelessWidget {
                         ),
                       )
                     else
-                      const Icon(
+                      Icon(
                         Icons.add_circle_outline,
                         color: AppColors.textMuted,
                         size: 28,
@@ -103,7 +103,7 @@ class TeamSlot extends StatelessWidget {
           IconButton(
             tooltip: 'Retirer ${selected.name}',
             onPressed: onClear,
-            icon: const Icon(Icons.close, size: 18, color: AppColors.textMuted),
+            icon: Icon(Icons.close, size: 18, color: AppColors.textMuted),
           )
         else
           const SizedBox(width: 48),

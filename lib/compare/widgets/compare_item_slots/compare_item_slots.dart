@@ -96,7 +96,7 @@ class _AddSlot extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.accent.withValues(alpha: 0.5)),
           ),
-          child: const Icon(Icons.add, size: 18, color: AppColors.accent),
+          child: Icon(Icons.add, size: 18, color: AppColors.accent),
         ),
       ),
     );

@@ -20,7 +20,7 @@ class ItemDetailHeader extends StatelessWidget {
             onPressed: onBack,
             visualDensity: VisualDensity.compact,
             tooltip: 'Revenir à l\'objet précédent',
-            icon: const Icon(Icons.arrow_back, size: 20, color: AppColors.textMuted),
+            icon: Icon(Icons.arrow_back, size: 20, color: AppColors.textMuted),
           ),
           const SizedBox(width: 2),
         ],
@@ -35,7 +35,7 @@ class ItemDetailHeader extends StatelessWidget {
               height: 54,
               alignment: Alignment.center,
               color: AppColors.background,
-              child: const Icon(
+              child: Icon(
                 Icons.image_not_supported_outlined,
                 size: 18,
                 color: AppColors.textMuted,
@@ -52,7 +52,7 @@ class ItemDetailHeader extends StatelessWidget {
               const SizedBox(height: 3),
               Row(
                 children: [
-                  const Icon(Icons.circle, size: 9, color: AppColors.accent),
+                  Icon(Icons.circle, size: 9, color: AppColors.accent),
                   const SizedBox(width: 5),
                   Text(
                     '${item.gold} or',

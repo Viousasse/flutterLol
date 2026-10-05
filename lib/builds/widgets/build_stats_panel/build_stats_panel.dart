@@ -32,7 +32,7 @@ class BuildStatsPanel extends StatelessWidget {
           const SizedBox(height: 4),
           Row(
             children: [
-              const Icon(Icons.circle, size: 10, color: AppColors.accent),
+              Icon(Icons.circle, size: 10, color: AppColors.accent),
               const SizedBox(width: 7),
               Text('$totalGold or', style: AppTheme.serif(size: 22)),
             ],

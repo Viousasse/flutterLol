@@ -145,7 +145,7 @@ class _RuneChip extends StatelessWidget {
             ),
             child: RemoteImage(
               url: rune.iconUrl,
-              errorWidget: const Icon(
+              errorWidget: Icon(
                 Icons.circle_outlined,
                 size: 14,
                 color: AppColors.textMuted,

@@ -47,7 +47,7 @@ class BuildSlot extends StatelessWidget {
               ),
             ),
             child: chosen == null
-                ? const Center(
+                ? Center(
                     child: Icon(
                       Icons.add,
                       color: AppColors.textMuted,
@@ -96,7 +96,7 @@ class _Filled extends StatelessWidget {
             tooltip: 'Retirer ${item.name}',
             visualDensity: VisualDensity.compact,
             onPressed: onClear,
-            icon: const Icon(Icons.close, size: 16, color: AppColors.textMuted),
+            icon: Icon(Icons.close, size: 16, color: AppColors.textMuted),
           ),
         ),
       ],

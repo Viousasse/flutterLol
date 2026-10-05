@@ -4,20 +4,26 @@ import 'app_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
-  static ThemeData get theme {
-    final baseTextTheme = ThemeData.dark().textTheme.apply(
-      fontFamily: AppFonts.sans,
-    );
+  /// Thème du mode actuellement actif dans [AppColors].
+  static ThemeData get theme =>
+      themeFor(AppColors.isDark ? Brightness.dark : Brightness.light);
+
+  static ThemeData themeFor(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final baseTextTheme = (isDark ? ThemeData.dark() : ThemeData.light())
+        .textTheme
+        .apply(fontFamily: AppFonts.sans);
 
     return ThemeData(
-      brightness: Brightness.dark,
+      brightness: brightness,
       scaffoldBackgroundColor: AppColors.background,
       primaryColor: AppColors.accent,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.accent,
-        secondary: AppColors.accent,
-        surface: AppColors.surface,
-      ),
+      colorScheme: (isDark ? const ColorScheme.dark() : const ColorScheme.light())
+          .copyWith(
+            primary: AppColors.accent,
+            secondary: AppColors.accent,
+            surface: AppColors.surface,
+          ),
       textTheme: baseTextTheme.apply(
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,
@@ -32,17 +38,17 @@ class AppTheme {
           fontSize: 26,
           fontWeight: FontWeight.w400,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: AppColors.border, width: 1),
+          side: BorderSide(color: AppColors.border, width: 1),
         ),
       ),
-      iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      iconTheme: IconThemeData(color: AppColors.textPrimary),
       dividerColor: AppColors.border,
     );
   }
