@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../champions/services/champion_service.dart';
+import '../shared/widgets/app_filter_chip/app_filter_chip.dart';
 import '../items/services/item_service.dart';
 import '../matchups/services/matchup_service.dart';
 import '../shared/errors/user_message.dart';
@@ -11,6 +14,8 @@ import 'models/quiz_question.dart';
 import 'services/quiz_generator.dart';
 import 'services/quiz_score_service.dart';
 import 'widgets/quiz_category_bar/quiz_category_bar.dart';
+import 'widgets/quiz_history/quiz_history.dart';
+import 'widgets/quiz_timer_bar/quiz_timer_bar.dart';
 import 'widgets/quiz_question_card/quiz_question_card.dart';
 import 'widgets/quiz_score_bar/quiz_score_bar.dart';
 
@@ -22,6 +27,13 @@ class QuizPage extends StatefulWidget {
   @override
   State<QuizPage> createState() => _QuizPageState();
 }
+
+/// Temps laissé pour répondre en mode chrono.
+const _secondsPerQuestion = 15;
+
+/// Index posé quand le temps est écoulé : aucune proposition n'a été choisie,
+/// mais la question compte comme répondue pour afficher la correction.
+const _timedOutIndex = -1;
 
 class _QuizPageState extends State<QuizPage> {
   QuizGenerator? generator;
@@ -36,10 +48,21 @@ class _QuizPageState extends State<QuizPage> {
   int correct = 0;
   int answered = 0;
 
+  bool isTimed = false;
+  bool timedOut = false;
+  int secondsLeft = _secondsPerQuestion;
+  Timer? timer;
+
   @override
   void initState() {
     super.initState();
     loadData();
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   Future<void> loadData() async {
@@ -85,7 +108,9 @@ class _QuizPageState extends State<QuizPage> {
     setState(() {
       question = generator?.next(category: category, avoid: question);
       chosenIndex = null;
+      timedOut = false;
     });
+    _restartTimer();
   }
 
   void _selectCategory(QuizCategory? next) {
@@ -93,11 +118,59 @@ class _QuizPageState extends State<QuizPage> {
     _draw();
   }
 
+  void _toggleTimed() {
+    setState(() => isTimed = !isTimed);
+    _restartTimer();
+  }
+
+  /// Le chrono ne tourne que tant qu'une question attend sa réponse.
+  void _restartTimer() {
+    timer?.cancel();
+    if (!isTimed || question == null || chosenIndex != null) return;
+
+    setState(() => secondsLeft = _secondsPerQuestion);
+    timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  void _tick() {
+    if (!mounted) return;
+
+    // L'onglet reste vivant sous l'IndexedStack quand on en ouvre un autre, et
+    // sa ticker mode est alors coupée : le chrono attend le retour plutôt que
+    // de faire expirer la question dans le dos du joueur.
+    if (!TickerMode.valuesOf(context).enabled) return;
+
+    if (secondsLeft <= 1) {
+      _expire();
+      return;
+    }
+
+    setState(() => secondsLeft--);
+  }
+
+  /// Le temps écoulé compte comme une mauvaise réponse : la série s'arrête.
+  Future<void> _expire() async {
+    timer?.cancel();
+    final endedStreak = streak;
+
+    setState(() {
+      secondsLeft = 0;
+      chosenIndex = _timedOutIndex;
+      timedOut = true;
+      answered++;
+      streak = 0;
+    });
+
+    await QuizScoreService.recordFinished(endedStreak);
+  }
+
   Future<void> _answer(int index) async {
     final current = question;
     if (current == null || chosenIndex != null) return;
 
+    timer?.cancel();
     final right = index == current.answerIndex;
+    final endedStreak = streak;
     final nextStreak = right ? streak + 1 : 0;
 
     setState(() {
@@ -107,7 +180,11 @@ class _QuizPageState extends State<QuizPage> {
       streak = nextStreak;
     });
 
-    if (right) await QuizScoreService.submit(nextStreak);
+    if (right) {
+      await QuizScoreService.submit(nextStreak);
+    } else {
+      await QuizScoreService.recordFinished(endedStreak);
+    }
   }
 
   @override
@@ -150,15 +227,36 @@ class _QuizPageState extends State<QuizPage> {
 
     return [
       QuizScoreBar(streak: streak, correct: correct, answered: answered),
+      const QuizHistory(),
       const SizedBox(height: 12),
       QuizCategoryBar(selected: category, onSelect: _selectCategory),
+      const SizedBox(height: 8),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: SizedBox(
+          height: 32,
+          child: AppFilterChip(
+            label: 'Chrono $_secondsPerQuestion s',
+            selected: isTimed,
+            onTap: _toggleTimed,
+          ),
+        ),
+      ),
       const SizedBox(height: 14),
+      if (isTimed && current != null && chosenIndex == null) ...[
+        QuizTimerBar(
+          secondsLeft: secondsLeft,
+          totalSeconds: _secondsPerQuestion,
+        ),
+        const SizedBox(height: 12),
+      ],
       if (current == null)
         _NoQuestion(onRetry: _draw)
       else
         QuizQuestionCard(
           question: current,
           chosenIndex: chosenIndex,
+          timedOut: timedOut,
           onAnswer: _answer,
           onNext: _draw,
         ),

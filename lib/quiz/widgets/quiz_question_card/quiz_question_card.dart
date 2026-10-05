@@ -18,12 +18,17 @@ class QuizQuestionCard extends StatelessWidget {
   final ValueChanged<int> onAnswer;
   final VoidCallback onNext;
 
+  /// Vrai quand le chrono a expiré : aucune réponse n'a été choisie, mais la
+  /// correction s'affiche quand même.
+  final bool timedOut;
+
   const QuizQuestionCard({
     super.key,
     required this.question,
     required this.chosenIndex,
     required this.onAnswer,
     required this.onNext,
+    this.timedOut = false,
   });
 
   @override
@@ -71,7 +76,8 @@ class QuizQuestionCard extends StatelessWidget {
               ),
             );
           }),
-          if (answered) _Verdict(question: question, chosenIndex: chosen),
+          if (answered)
+            _Verdict(question: question, chosenIndex: chosen, timedOut: timedOut),
           if (answered) ...[
             const SizedBox(height: 12),
             _NextButton(onTap: onNext),
@@ -93,12 +99,24 @@ class QuizQuestionCard extends StatelessWidget {
 class _Verdict extends StatelessWidget {
   final QuizQuestion question;
   final int chosenIndex;
+  final bool timedOut;
 
-  const _Verdict({required this.question, required this.chosenIndex});
+  const _Verdict({
+    required this.question,
+    required this.chosenIndex,
+    required this.timedOut,
+  });
+
+  String get _message {
+    if (timedOut) return 'Temps écoulé : ${question.answer.label}.';
+    if (chosenIndex == question.answerIndex) return 'Bonne réponse.';
+
+    return 'Raté : ${question.answer.label}.';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final right = chosenIndex == question.answerIndex;
+    final right = !timedOut && chosenIndex == question.answerIndex;
     final explanation = question.explanation;
 
     return Column(
@@ -106,7 +124,7 @@ class _Verdict extends StatelessWidget {
       children: [
         const SizedBox(height: 2),
         Text(
-          right ? 'Bonne réponse.' : 'Raté : ${question.answer.label}.',
+          _message,
           style: AppTheme.mono(
             size: 10.5,
             color: right ? quizCorrectColor : quizWrongColor,
