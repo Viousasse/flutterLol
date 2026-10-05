@@ -25,7 +25,17 @@ import 'services/role_filters.dart';
 /// Compose une équipe de cinq champions et dit ce qui lui manque : dégâts
 /// physiques ou magiques, première ligne, contrôle.
 class TeamPage extends StatefulWidget {
-  const TeamPage({super.key});
+  /// Sources de données, injectables pour tester la page sans réseau.
+  final Future<List<Champion>> Function() loadChampions;
+  final Future<ChampionDetail> Function(String championId) loadDetail;
+  final Future<LaneProfile?> Function() loadProfile;
+
+  const TeamPage({
+    super.key,
+    this.loadChampions = ChampionService.fetchAll,
+    this.loadDetail = ChampionService.fetchDetail,
+    this.loadProfile = RoleFilters.loadProfile,
+  });
 
   @override
   State<TeamPage> createState() => _TeamPageState();
@@ -54,13 +64,13 @@ class _TeamPageState extends State<TeamPage> {
   }
 
   Future<void> loadChampions() async {
-    RoleFilters.loadProfile().then((profile) {
+    widget.loadProfile().then((profile) {
       if (!mounted) return;
       setState(() => laneProfile = profile);
     });
 
     try {
-      final loaded = await ChampionService.fetchAll();
+      final loaded = await widget.loadChampions();
 
       if (!mounted) return;
       setState(() {
@@ -107,7 +117,7 @@ class _TeamPageState extends State<TeamPage> {
     setState(() => loadingIds.add(championId));
 
     try {
-      final detail = await ChampionService.fetchDetail(championId);
+      final detail = await widget.loadDetail(championId);
       if (!mounted) return;
       setState(() => details[championId] = detail);
     } catch (error) {

@@ -25,7 +25,16 @@ class CountersPage extends StatefulWidget {
   /// Adversaire déjà choisi, quand on arrive depuis sa fiche.
   final String? initialOpponentId;
 
-  const CountersPage({super.key, this.initialOpponentId});
+  /// Sources de données, injectables pour tester la page sans réseau.
+  final Future<List<Champion>> Function() loadChampions;
+  final Future<MatchupDataset> Function() loadDataset;
+
+  const CountersPage({
+    super.key,
+    this.initialOpponentId,
+    this.loadChampions = ChampionService.fetchAll,
+    this.loadDataset = MatchupService.load,
+  });
 
   @override
   State<CountersPage> createState() => _CountersPageState();
@@ -48,11 +57,14 @@ class _CountersPageState extends State<CountersPage> {
 
   Future<void> loadData() async {
     try {
-      final championsRequest = ChampionService.fetchAll();
-      final datasetRequest = MatchupService.load();
-
-      final loadedChampions = await championsRequest;
-      final loadedDataset = await datasetRequest;
+      // Future.wait écoute tous les chargements dès le départ : une erreur du
+      // second ne reste pas sans auditeur pendant qu'on attend le premier.
+      final results = await Future.wait<Object?>([
+        widget.loadChampions(),
+        widget.loadDataset(),
+      ]);
+      final loadedChampions = results[0] as List<Champion>;
+      final loadedDataset = results[1] as MatchupDataset;
 
       if (!mounted) return;
       setState(() {

@@ -19,6 +19,15 @@ class BuildStore {
   static Future<void>? _loading;
   static Future<void> _writeQueue = Future.value();
 
+  /// Réservé aux tests : repart d'un stockage statique vierge, pour les tests
+  /// qui rejouent plusieurs fois le chargement dans un même processus.
+  @visibleForTesting
+  static void reset() {
+    _loading = null;
+    _writeQueue = Future.value();
+    builds.value = const [];
+  }
+
   static Future<void> ensureLoaded() {
     final loading = _loading;
     if (loading != null) return loading;

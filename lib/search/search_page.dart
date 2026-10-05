@@ -37,11 +37,14 @@ class _SearchPageState extends State<SearchPage> {
 
   Future<void> loadData() async {
     try {
-      final championsRequest = ChampionService.fetchAll();
-      final itemsRequest = ItemService.fetchAll();
-
-      final loadedChampions = await championsRequest;
-      final loadedItems = await itemsRequest;
+      // Future.wait écoute tous les chargements dès le départ : une erreur du
+      // second ne reste pas sans auditeur pendant qu'on attend le premier.
+      final results = await Future.wait<Object?>([
+        ChampionService.fetchAll(),
+        ItemService.fetchAll(),
+      ]);
+      final loadedChampions = results[0] as List<Champion>;
+      final loadedItems = results[1] as List<Item>;
 
       if (!mounted) return;
       setState(() {

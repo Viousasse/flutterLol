@@ -19,7 +19,15 @@ import 'widgets/build_tile/build_tile.dart';
 
 /// Les builds que le joueur a enregistrées.
 class BuildsPage extends StatefulWidget {
-  const BuildsPage({super.key});
+  /// Sources de données, injectables pour tester la page sans réseau.
+  final Future<List<Item>> Function() loadItems;
+  final Future<List<Champion>> Function() loadChampions;
+
+  const BuildsPage({
+    super.key,
+    this.loadItems = ItemService.fetchAll,
+    this.loadChampions = ChampionService.fetchAll,
+  });
 
   @override
   State<BuildsPage> createState() => _BuildsPageState();
@@ -39,13 +47,15 @@ class _BuildsPageState extends State<BuildsPage> {
 
   Future<void> loadData() async {
     try {
-      final itemsRequest = ItemService.fetchAll();
-      final championsRequest = ChampionService.fetchAll();
-      final storeRequest = BuildStore.ensureLoaded();
-
-      final loadedItems = await itemsRequest;
-      final loadedChampions = await championsRequest;
-      await storeRequest;
+      // Future.wait écoute tous les chargements dès le départ : une erreur du
+      // second ne reste pas sans auditeur pendant qu'on attend le premier.
+      final results = await Future.wait<Object?>([
+        widget.loadItems(),
+        widget.loadChampions(),
+        BuildStore.ensureLoaded(),
+      ]);
+      final loadedItems = results[0] as List<Item>;
+      final loadedChampions = results[1] as List<Champion>;
 
       if (!mounted) return;
       setState(() {

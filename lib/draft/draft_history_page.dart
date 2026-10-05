@@ -46,9 +46,13 @@ class _DraftHistoryPageState extends State<DraftHistoryPage> {
 
   Future<void> loadData() async {
     try {
-      final storeRequest = DraftHistoryStore.ensureLoaded();
-      final champions = await widget.loadChampions();
-      await storeRequest;
+      // Future.wait écoute les deux chargements dès le départ : une erreur du
+      // store ne reste pas sans auditeur pendant qu'on attend les champions.
+      final results = await Future.wait<Object?>([
+        widget.loadChampions(),
+        DraftHistoryStore.ensureLoaded(),
+      ]);
+      final champions = results[0] as List<Champion>;
 
       if (!mounted) return;
       setState(() {

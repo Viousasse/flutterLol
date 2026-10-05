@@ -90,11 +90,14 @@ class _BuildEditorPageState extends State<BuildEditorPage> {
     });
 
     try {
-      final itemsRequest = ItemService.fetchAll();
-      final championsRequest = ChampionService.fetchAll();
-
-      final loadedItems = await itemsRequest;
-      final loadedChampions = await championsRequest;
+      // Future.wait écoute tous les chargements dès le départ : une erreur du
+      // second ne reste pas sans auditeur pendant qu'on attend le premier.
+      final results = await Future.wait<Object?>([
+        ItemService.fetchAll(),
+        ChampionService.fetchAll(),
+      ]);
+      final loadedItems = results[0] as List<Item>;
+      final loadedChampions = results[1] as List<Champion>;
 
       if (!mounted) return;
       setState(() {

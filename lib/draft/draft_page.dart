@@ -181,11 +181,14 @@ class _DraftPageState extends State<DraftPage> {
 
   Future<void> loadData() async {
     try {
-      final championsRequest = widget.loadChampions();
-      final datasetRequest = widget.loadDataset();
-
-      final loadedChampions = await championsRequest;
-      final loadedDataset = await datasetRequest;
+      // Future.wait écoute tous les chargements dès le départ : une erreur du
+      // second ne reste pas sans auditeur pendant qu'on attend le premier.
+      final results = await Future.wait<Object?>([
+        widget.loadChampions(),
+        widget.loadDataset(),
+      ]);
+      final loadedChampions = results[0] as List<Champion>;
+      final loadedDataset = results[1] as MatchupDataset;
       if (_mode == DraftMode.vsFriend) await FriendSessionStore.ensureLoaded();
 
       if (!mounted) return;

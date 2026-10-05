@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
 import '../shared/widgets/app_filter_chip/app_filter_chip.dart';
+import '../items/models/item.dart';
 import '../items/services/item_service.dart';
 import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
@@ -79,19 +81,19 @@ class _QuizPageState extends State<QuizPage> {
 
   Future<void> loadData() async {
     try {
-      // Lancés ensemble, récupérés typés : Future.wait aurait rendu une liste
-      // d'Object? qu'il aurait fallu recaster.
-      final championsRequest = ChampionService.fetchAll();
-      final itemsRequest = ItemService.fetchAll();
-      final matchupsRequest = _loadMatchups();
-      final scoreRequest = QuizScoreService.ensureLoaded();
-
+      // Future.wait écoute tous les chargements dès le départ : une erreur du
+      // second ne reste pas sans auditeur pendant qu'on attend le premier.
+      final results = await Future.wait<Object?>([
+        ChampionService.fetchAll(),
+        ItemService.fetchAll(),
+        _loadMatchups(),
+        QuizScoreService.ensureLoaded(),
+      ]);
       final data = QuizData(
-        champions: await championsRequest,
-        items: await itemsRequest,
-        matchups: await matchupsRequest,
+        champions: results[0] as List<Champion>,
+        items: results[1] as List<Item>,
+        matchups: results[2] as MatchupDataset,
       );
-      await scoreRequest;
 
       if (!mounted) return;
       setState(() {
