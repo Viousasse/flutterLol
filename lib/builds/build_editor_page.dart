@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../champions/models/champion.dart';
 import '../champions/services/champion_service.dart';
-import '../compare/widgets/champion_picker_sheet/champion_picker_sheet.dart';
+import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
 import '../items/models/item.dart';
 import '../items/services/item_service.dart';
 import '../shared/errors/user_message.dart';
@@ -15,7 +15,7 @@ import 'services/build_stats.dart';
 import 'services/build_store.dart';
 import 'widgets/build_slot/build_slot.dart';
 import 'widgets/build_stats_panel/build_stats_panel.dart';
-import 'widgets/item_picker_sheet/item_picker_sheet.dart';
+import '../shared/widgets/item_picker_sheet/item_picker_sheet.dart';
 
 const _defaultName = 'Ma build';
 const _slotColumns = 3;

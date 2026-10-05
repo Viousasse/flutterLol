@@ -1,27 +1,33 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:monapp/champions/models/champion_stats.dart';
+import 'package:monapp/compare/models/combat_stats.dart';
 import 'package:monapp/compare/models/stat_comparison.dart';
 import 'package:monapp/compare/services/comparison_builder.dart';
 
-ChampionStats _stats({
+CombatStats _stats({
   double health = 600,
   double armor = 30,
-  double attackSpeed = 0.65,
-  int difficulty = 5,
+  double abilityPower = 0,
+  double critChance = 0,
+  double lifeSteal = 0,
 }) {
-  return ChampionStats(
+  return CombatStats(
     health: health,
+    attackDamage: 60,
+    abilityPower: abilityPower,
+    attackSpeed: 0.65,
     armor: armor,
     magicResist: 32,
-    attackDamage: 60,
-    attackSpeed: attackSpeed,
     moveSpeed: 340,
     attackRange: 175,
-    attackRating: 6,
-    defenseRating: 5,
-    magicRating: 3,
-    difficulty: difficulty,
+    critChance: critChance,
+    lifeSteal: lifeSteal,
+    difficulty: 5,
   );
+}
+
+List<String> _labels(List<StatComparison> rows) {
+  return rows.map((row) => row.label).toList();
 }
 
 void main() {
@@ -59,14 +65,48 @@ void main() {
     expect(speed.decimals, 2);
   });
 
+  test('sans objet, les lignes alimentées par les objets sont absentes', () {
+    final labels = _labels(ComparisonBuilder.build(_stats(), _stats()));
+
+    expect(labels, isNot(contains('Puissance')));
+    expect(labels, isNot(contains('Chances de coup critique (%)')));
+    expect(labels, isNot(contains('Vol de vie (%)')));
+  });
+
+  test('un seul champion équipé suffit à faire apparaître la ligne', () {
+    final rows = ComparisonBuilder.build(
+      _stats(abilityPower: 120, critChance: 0.25, lifeSteal: 0.1),
+      _stats(),
+    );
+    final labels = _labels(rows);
+
+    expect(labels, contains('Puissance'));
+    expect(labels, contains('Chances de coup critique (%)'));
+    expect(labels, contains('Vol de vie (%)'));
+
+    final crit = rows.firstWhere(
+      (row) => row.label == 'Chances de coup critique (%)',
+    );
+    expect(crit.left, 25);
+    expect(crit.winner, ComparisonWinner.left);
+  });
+
   test('lit les caractéristiques depuis le JSON de Data Dragon', () {
     final stats = ChampionStats.fromJson(
-      {'hp': 630, 'armor': 34, 'attackspeed': 0.625},
+      {
+        'hp': 630,
+        'hpperlevel': 109,
+        'armor': 34,
+        'attackspeed': 0.625,
+        'attackspeedperlevel': 2.5,
+      },
       {'difficulty': 7},
     );
 
     expect(stats.health, 630);
+    expect(stats.healthPerLevel, 109);
     expect(stats.attackSpeed, 0.625);
+    expect(stats.attackSpeedPerLevel, 2.5);
     expect(stats.difficulty, 7);
     expect(stats.magicResist, 0);
   });

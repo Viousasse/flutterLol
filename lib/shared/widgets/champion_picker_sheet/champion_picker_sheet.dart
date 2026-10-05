@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../champions/models/champion.dart';
-import '../../../shared/widgets/remote_image/remote_image.dart';
+import '../remote_image/remote_image.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 

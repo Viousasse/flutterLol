@@ -1,7 +1,9 @@
+import '../../items/constants/item_slots.dart';
+
 /// Une composition d'objets enregistrée par le joueur.
 class Build {
   /// Nombre d'emplacements d'objets dans le jeu.
-  static const maxItems = 6;
+  static const maxItems = maxItemSlots;
 
   final String id;
   final String name;

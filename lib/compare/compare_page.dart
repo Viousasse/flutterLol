@@ -3,19 +3,26 @@ import 'package:flutter/material.dart';
 import '../champions/models/champion.dart';
 import '../champions/models/champion_detail.dart';
 import '../champions/services/champion_service.dart';
+import '../items/models/item.dart';
+import '../items/services/item_service.dart';
 import '../matchups/models/matchup.dart';
 import '../matchups/services/matchup_service.dart';
 import '../shared/errors/user_message.dart';
+import '../shared/widgets/champion_picker_sheet/champion_picker_sheet.dart';
 import '../shared/widgets/error_retry_view/error_retry_view.dart';
+import '../shared/widgets/item_picker_sheet/item_picker_sheet.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'services/combat_stats_calculator.dart';
 import 'services/comparison_builder.dart';
-import 'widgets/champion_picker_sheet/champion_picker_sheet.dart';
+import 'widgets/compare_item_slots/compare_item_slots.dart';
+import 'widgets/compare_level_slider/compare_level_slider.dart';
 import 'widgets/compare_slot/compare_slot.dart';
 import 'widgets/head_to_head_card/head_to_head_card.dart';
 import 'widgets/stat_compare_row/stat_compare_row.dart';
 
-/// Deux champions côte à côte : caractéristiques de base et bilan en duel.
+/// Deux champions côte à côte, à un niveau et avec les objets de son choix, plus
+/// leur bilan en duel.
 class ComparePage extends StatefulWidget {
   /// Champion déjà placé à gauche, quand on arrive depuis sa fiche.
   final String? initialChampionId;
@@ -34,6 +41,10 @@ class _ComparePageState extends State<ComparePage> {
   Champion? right;
   ChampionDetail? leftDetail;
   ChampionDetail? rightDetail;
+
+  int level = CombatStatsCalculator.minLevel;
+  List<Item> leftItems = const [];
+  List<Item> rightItems = const [];
 
   bool isLoading = true;
   bool isLoadingDetails = false;
@@ -115,6 +126,44 @@ class _ComparePageState extends State<ComparePage> {
     loadDetails();
   }
 
+  /// Les objets ne sont téléchargés qu'au premier ajout : la comparaison de
+  /// deux champions nus n'en a pas besoin.
+  Future<void> addItem({required bool isLeft}) async {
+    final List<Item> catalog;
+
+    try {
+      catalog = await ItemService.fetchAll();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+      return;
+    }
+    if (!mounted) return;
+
+    final item = await ItemPickerSheet.show(context, items: catalog);
+    if (item == null || !mounted) return;
+
+    setState(() {
+      if (isLeft) {
+        leftItems = [...leftItems, item];
+      } else {
+        rightItems = [...rightItems, item];
+      }
+    });
+  }
+
+  void removeItem({required bool isLeft, required int index}) {
+    setState(() {
+      if (isLeft) {
+        leftItems = [...leftItems]..removeAt(index);
+      } else {
+        rightItems = [...rightItems]..removeAt(index);
+      }
+    });
+  }
+
   /// Les caractéristiques viennent de la fiche détaillée de chaque champion,
   /// téléchargée à la demande plutôt que pour les 170 d'avance.
   Future<void> loadDetails() async {
@@ -171,29 +220,45 @@ class _ComparePageState extends State<ComparePage> {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: CompareSlot(
-                champion: left,
-                emptyLabel: 'Choisir le premier champion',
-                onTap: () => pick(isLeft: true),
-              ),
-            ),
+            Expanded(child: _column(isLeft: true)),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.only(left: 10, right: 10, top: 80),
               child: Text('VS', style: TextStyle(color: AppColors.accent)),
             ),
-            Expanded(
-              child: CompareSlot(
-                champion: right,
-                emptyLabel: 'Choisir le second champion',
-                onTap: () => pick(isLeft: false),
-              ),
-            ),
+            Expanded(child: _column(isLeft: false)),
           ],
         ),
         const SizedBox(height: 22),
         ..._comparison(),
+      ],
+    );
+  }
+
+  /// Le portrait d'un champion, et sous lui ses objets une fois choisi.
+  Widget _column({required bool isLeft}) {
+    final champion = isLeft ? left : right;
+    final items = isLeft ? leftItems : rightItems;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CompareSlot(
+          champion: champion,
+          emptyLabel: isLeft
+              ? 'Choisir le premier champion'
+              : 'Choisir le second champion',
+          onTap: () => pick(isLeft: isLeft),
+        ),
+        if (champion != null) ...[
+          const SizedBox(height: 10),
+          CompareItemSlots(
+            items: items,
+            onAdd: () => addItem(isLeft: isLeft),
+            onRemoveAt: (index) => removeItem(isLeft: isLeft, index: index),
+          ),
+        ],
       ],
     );
   }
@@ -228,9 +293,18 @@ class _ComparePageState extends State<ComparePage> {
       ];
     }
 
+    final rows = ComparisonBuilder.build(
+      CombatStatsCalculator.compute(leftStats, level, leftItems),
+      CombatStatsCalculator.compute(rightStats, level, rightItems),
+    );
+
     return [
-      for (final stat in ComparisonBuilder.build(leftStats, rightStats))
-        StatCompareRow(stat: stat),
+      CompareLevelSlider(
+        level: level,
+        onChanged: (value) => setState(() => level = value),
+      ),
+      const SizedBox(height: 8),
+      for (final stat in rows) StatCompareRow(stat: stat),
       const SizedBox(height: 18),
       if (!dataset.isEmpty)
         HeadToHeadCard(left: currentLeft, right: currentRight, dataset: dataset),
