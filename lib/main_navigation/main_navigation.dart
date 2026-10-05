@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_fonts.dart';
 import '../home/home_page.dart';
 import '../champions/champions_page.dart';
 import '../quiz/quiz_page.dart';
 import '../items/items_page.dart';
 import '../map/map_page.dart';
 import '../tools/tools_page.dart';
-import '../theme/app_colors.dart';
+import 'widgets/app_nav_bar/app_nav_bar.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -25,13 +24,37 @@ class _MainNavigationState extends State<MainNavigation> {
   /// onglets que l'utilisateur n'a jamais visités.
   final Set<int> visitedTabs = {0};
 
-  final labels = const [
-    'Accueil',
-    'Champions',
-    'Quiz',
-    'Objets',
-    'Outils',
-    'Carte',
+  final destinations = const [
+    AppNavDestination(
+      label: 'Accueil',
+      icon: Icons.home_outlined,
+      selectedIcon: Icons.home,
+    ),
+    AppNavDestination(
+      label: 'Champions',
+      icon: Icons.shield_outlined,
+      selectedIcon: Icons.shield,
+    ),
+    AppNavDestination(
+      label: 'Quiz',
+      icon: Icons.quiz_outlined,
+      selectedIcon: Icons.quiz,
+    ),
+    AppNavDestination(
+      label: 'Objets',
+      icon: Icons.backpack_outlined,
+      selectedIcon: Icons.backpack,
+    ),
+    AppNavDestination(
+      label: 'Outils',
+      icon: Icons.build_outlined,
+      selectedIcon: Icons.build,
+    ),
+    AppNavDestination(
+      label: 'Carte',
+      icon: Icons.map_outlined,
+      selectedIcon: Icons.map,
+    ),
   ];
 
   Widget _buildPage(int index) {
@@ -66,61 +89,14 @@ class _MainNavigationState extends State<MainNavigation> {
       body: IndexedStack(
         index: currentIndex,
         children: [
-          for (var index = 0; index < labels.length; index++) _buildPage(index),
+          for (var index = 0; index < destinations.length; index++)
+            _buildPage(index),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-          color: AppColors.background,
-          child: Row(
-            children: List.generate(labels.length, (index) {
-              final selected = currentIndex == index;
-              return Expanded(
-                child: Semantics(
-                  button: true,
-                  selected: selected,
-                  label: labels[index],
-                  excludeSemantics: true,
-                  onTap: () => _openTab(index),
-                  child: GestureDetector(
-                  onTap: () => _openTab(index),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    height: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? AppColors.accentSoft
-                          : AppColors.textPrimary.withValues(alpha: 0.04),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: selected
-                            ? AppColors.accent.withValues(alpha: 0.35)
-                            : AppColors.border,
-                      ),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        labels[index],
-                        style: TextStyle(
-                          fontFamily: AppFonts.sans,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: selected
-                              ? AppColors.accent
-                              : AppColors.textMuted,
-                        ),
-                      ),
-                    ),
-                  ),
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
+      bottomNavigationBar: AppNavBar(
+        destinations: destinations,
+        currentIndex: currentIndex,
+        onSelect: _openTab,
       ),
     );
   }
