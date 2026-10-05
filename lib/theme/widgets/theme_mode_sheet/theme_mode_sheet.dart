@@ -41,48 +41,54 @@ class ThemeModeSheet extends StatelessWidget {
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      // Le fond est peint dans `build` : la feuille reste ouverte pendant le
+      // changement de mode, et une couleur donnée ici resterait celle de
+      // l'ancien mode.
+      backgroundColor: Colors.transparent,
       builder: (_) => const ThemeModeSheet(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 12, 8, 16),
-        child: ValueListenableBuilder<ThemeMode>(
-          valueListenable: ThemeService.mode,
-          builder: (context, current, _) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: Text('Affichage', style: AppTheme.serif(size: 20)),
-              ),
-              for (final option in _options)
-                ListTile(
-                  onTap: () => ThemeService.setMode(option.mode),
-                  leading: Icon(option.icon, color: AppColors.accent),
-                  title: Text(option.label, style: AppTheme.serif(size: 16)),
-                  subtitle: Text(
-                    option.hint,
-                    style: AppTheme.serif(
-                      size: 12.5,
-                      italic: true,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  trailing: current == option.mode
-                      ? Icon(Icons.check, color: AppColors.accent)
-                      : null,
-                  selected: current == option.mode,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 12, 8, 16),
+          child: ValueListenableBuilder<ThemeMode>(
+            valueListenable: ThemeService.mode,
+            builder: (context, current, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: Text('Affichage', style: AppTheme.serif(size: 20)),
                 ),
-            ],
+                for (final option in _options)
+                  ListTile(
+                    onTap: () => ThemeService.setMode(option.mode),
+                    leading: Icon(option.icon, color: AppColors.accent),
+                    title: Text(option.label, style: AppTheme.serif(size: 16)),
+                    subtitle: Text(
+                      option.hint,
+                      style: AppTheme.serif(
+                        size: 12.5,
+                        italic: true,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    trailing: current == option.mode
+                        ? Icon(Icons.check, color: AppColors.accent)
+                        : null,
+                    selected: current == option.mode,
+                  ),
+              ],
+            ),
           ),
         ),
       ),

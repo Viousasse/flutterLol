@@ -24,28 +24,30 @@ class AppPalette {
 
   /// À 0,5 d'opacité le texte atteint le rapport de contraste 4,5:1 exigé par
   /// le RGAA sur le fond sombre ; à 0,35 il restait à 3:1 environ.
+  /// Les teintes du client de League of Legends : bleu nuit presque noir, or
+  /// pâle pour l'accent, parchemin pour le texte.
   static const dark = AppPalette(
-    background: Color(0xFF100C0B),
-    surface: Color(0xFF191312),
-    accent: Color(0xFFE07A5F),
-    textPrimary: Color(0xFFF4EFEA),
-    textSecondary: Color.fromRGBO(244, 239, 234, 0.55),
-    textMuted: Color.fromRGBO(244, 239, 234, 0.5),
-    border: Color.fromRGBO(244, 239, 234, 0.08),
-    accentSoft: Color.fromRGBO(224, 122, 95, 0.14),
+    background: Color(0xFF010A13),
+    surface: Color(0xFF0A1428),
+    accent: Color(0xFFC8AA6E),
+    textPrimary: Color(0xFFF0E6D2),
+    textSecondary: Color.fromRGBO(240, 230, 210, 0.62),
+    textMuted: Color.fromRGBO(240, 230, 210, 0.55),
+    border: Color.fromRGBO(200, 170, 110, 0.22),
+    accentSoft: Color.fromRGBO(200, 170, 110, 0.14),
   );
 
-  /// Fond chaud et encre sombre. L'accent est plus foncé que sur fond sombre :
-  /// le corail clair ne tiendrait pas le contraste 4,5:1 sur un fond clair.
+  /// Parchemin et encre bleu nuit. L'or est assombri : l'or clair du mode
+  /// sombre ne tiendrait pas le contraste 4,5:1 sur un fond clair.
   static const light = AppPalette(
-    background: Color(0xFFF7F2EC),
-    surface: Color(0xFFFFFFFF),
-    accent: Color(0xFFB8452B),
-    textPrimary: Color(0xFF1B1412),
-    textSecondary: Color.fromRGBO(27, 20, 18, 0.72),
-    textMuted: Color.fromRGBO(27, 20, 18, 0.62),
-    border: Color.fromRGBO(27, 20, 18, 0.12),
-    accentSoft: Color.fromRGBO(184, 69, 43, 0.12),
+    background: Color(0xFFF3EEE2),
+    surface: Color(0xFFFBF8F1),
+    accent: Color(0xFF7A5C1E),
+    textPrimary: Color(0xFF0A1428),
+    textSecondary: Color.fromRGBO(10, 20, 40, 0.74),
+    textMuted: Color.fromRGBO(10, 20, 40, 0.64),
+    border: Color.fromRGBO(120, 90, 40, 0.28),
+    accentSoft: Color.fromRGBO(122, 92, 30, 0.12),
   );
 }
 
